@@ -21,6 +21,7 @@ const storage = multer.diskStorage({
     filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
 });
 const upload = multer({ storage });
+
 const generateUniqueCode = async () => {
     let uniqueCode;
     let isUnique = false;
@@ -84,35 +85,22 @@ router.get("/admin-profile", async (req, res) => {
         res.status(500).json({ message: "Server error!" });
     }
 });
-
-router.put(
-    "/admin-update-profile",
-    verifyAdmin,
-    upload.single("profileImage"),
-    async (req, res) => {
+router.put("/admin-update-profile",verifyAdmin,upload.single("profileImage"),async (req, res) => {
         try {
             const { name, email, phone, collegeName, dateOfBirth, joiningDate, uniqueCode } = req.body;
             const profileImage = req.file ? req.file.filename : undefined;
-
             console.log("📁 Uploaded File:", req.file);
             console.log("📄 Request Body:", req.body);
-
             if (!req.adminId) {
                 return res.status(400).json({ message: "Admin ID is missing. Unauthorized request." });
             }
-
-            // Find the existing admin
             const existingAdmin = await Admin.findById(req.adminId);
             if (!existingAdmin) {
                 return res.status(404).json({ message: "Admin not found." });
             }
-
-            // Validate uniqueCode only if it's being updated
             if (uniqueCode && !/^\d{10}$/.test(uniqueCode)) {
                 return res.status(400).json({ message: "Unique code must be exactly 10 digits." });
             }
-
-            // Update only provided fields
             const updatedFields = {
                 ...(name && { name }),
                 ...(email && { email }),
@@ -123,7 +111,6 @@ router.put(
                 ...(uniqueCode && { uniqueCode }),
                 ...(profileImage && { profileImage: profileImage }),
             };
-
             const updatedAdmin = await Admin.findByIdAndUpdate(
                 req.adminId,
                 { $set: updatedFields },
@@ -136,6 +123,39 @@ router.put(
         }
     }
 );
+router.put("/students/update/:id", verifyAdmin, upload.single("profileImage"), async (req, res) => {
+    try {
+        const { id } = req.params;
+        let updateData = { ...req.body };
+
+        // 🚨 Ensure rollcode and password are not updated unless explicitly set
+        delete updateData.rollcode;
+        if (!updateData.password) {
+            delete updateData.password;
+        }
+
+        if (updateData.password) {
+            updateData.password = await bcrypt.hash(updateData.password, 10);
+        }
+
+        if (req.file) {
+            const baseUrl = `${req.protocol}://${req.get("host")}`;
+            updateData.profileImage = `${baseUrl}/uploads/${req.file.filename}`;
+        }
+
+        const updatedStudent = await Students.findByIdAndUpdate(id, updateData, { new: true });
+
+        if (!updatedStudent) {
+            return res.status(404).json({ message: "Student not found" });
+        }
+
+        res.status(200).json({ message: "Student updated successfully", student: updatedStudent });
+
+    } catch (error) {
+        console.error("Error updating student:", error);
+        res.status(500).json({ message: "Error updating student", error: error.message });
+    }
+});
 
 router.post("/login", async (req, res) => {
     try {
@@ -259,54 +279,6 @@ router.get("/students", verifyAdmin, async (req, res) => {
         res.status(500).json({ message: "Server error!" });
     }
 });
-
-router.put("/students/update/:id", verifyAdmin, async (req, res) => {
-    console.log("Received update request for ID:", req.params.id);
-    console.log("Request body:", req.body); 
-
-    try {
-        const { id } = req.params;
-        let updateData = { ...req.body };
-
-        // Hash password if it's being updated
-        if (updateData.password) {
-            updateData.password = await bcrypt.hash(updateData.password, 10);
-        }
-
-        const updatedStudent = await Students.findByIdAndUpdate(id, updateData, { new: true });
-
-        if (!updatedStudent) {
-            return res.status(404).json({ message: "Student not found" });
-        }
-
-        res.status(200).json({ message: "Student updated successfully", student: updatedStudent });
-    } catch (error) {
-        console.error("Error updating student:", error); // Log the error
-        res.status(500).json({ message: "Error updating student", error: error.message });
-    }
-});
-
-// router.put("/update/:id", verifyAdmin, async (req, res) => {
-//     try {
-//         const { id } = req.params;
-//         let updateData = { ...req.body };
-
-//         // Hash password if it's being updated
-//         if (updateData.password) {
-//             updateData.password = await bcrypt.hash(updateData.password, 10);
-//         }
-
-//         const updatedStudent = await Students.findByIdAndUpdate(id, updateData, { new: true });
-
-//         if (!updatedStudent) {
-//             return res.status(404).json({ message: "Student not found" });
-//         }
-
-//         res.status(200).json({ message: "Student updated successfully", student: updatedStudent });
-//     } catch (error) {
-//         res.status(500).json({ message: "Error updating student", error: error.message });
-//     }
-// });
 router.get("/employees", verifyAdmin, async (req, res) => {
     try {
         const employees = await Employee.find();

@@ -124,8 +124,8 @@ const HomePages = () => {
                     <img src="https://tse1.mm.bing.net/th?id=OIP.uJ7t8IOM9eroFbp5zKIGTQHaEq&pid=Api&P=0&h=180" alt="TCS" className="h-12" />
                 </div>
             </section>
-            {
-                 isChangePasswordOpen && (
+            
+                { isChangePasswordOpen && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                         <div className="bg-white p-6 rounded-lg shadow-lg w-96">
                             <h2 className="text-xl font-bold mb-4">Change Password</h2>
@@ -136,31 +136,43 @@ const HomePages = () => {
 
                             {!message && (
                                 <>
+                                    <label className="block text-gray-700 text-sm font-semibold mb-1">
+                                        Old Password
+                                    </label>
                                     <input
                                         type="password"
-                                        placeholder="Enter Old Password"
-                                        className="w-full p-2 border rounded mb-2"
-                                        value={oldPassword}
+                                        placeholder="Enter your old password..."
+                                        className="w-full p-2 border border-gray-300 rounded mb-2 focus:ring focus:ring-blue-200"
+                                        
                                         onChange={(e) => setOldPassword(e.target.value)}
                                     />
+
+                                    <label className="block text-gray-700 text-sm font-semibold mb-1">
+                                        New Password
+                                    </label>
                                     <input
                                         type="password"
-                                        placeholder="New Password"
-                                        className="w-full p-2 border rounded mb-2"
-                                        value={newPassword}
+                                        placeholder="Enter a new password..."
+                                        className="w-full p-2 border border-gray-300 rounded mb-2 focus:ring focus:ring-blue-200"
+                                        
                                         onChange={(e) => setNewPassword(e.target.value)}
                                     />
+
+                                    <label className="block text-gray-700 text-sm font-semibold mb-1">
+                                        Confirm Password
+                                    </label>
                                     <input
                                         type="password"
-                                        placeholder="Confirm Password"
-                                        className="w-full p-2 border rounded mb-4"
-                                        value={confirmPassword}
+                                        placeholder="Confirm your new password..."
+                                        className="w-full p-2 border border-gray-300 rounded mb-4 focus:ring focus:ring-blue-200"
+                                       
                                         onChange={(e) => setConfirmPassword(e.target.value)}
                                     />
 
                                     <button
-                                        className="bg-green-600 text-white w-full p-2 rounded"
+                                        className="bg-green-600 text-white w-full p-2 rounded hover:bg-green-700 transition"
                                         onClick={handleChangePassword}
+                                        disabled={loading}
                                     >
                                         {loading ? "Changing Password..." : "Change Password"}
                                     </button>
@@ -177,10 +189,7 @@ const HomePages = () => {
                             )}
                         </div>
                     </div>
-                )}
-
-
-            
+                )}            
         </div>
 
         

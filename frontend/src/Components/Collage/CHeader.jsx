@@ -103,34 +103,26 @@ const CHeader = () => {
     setLoading(true);
     setError("");
     setMessage("");
-
     const token = localStorage.getItem("token");
     if (!token) {
       setError("No authentication token found.");
       setLoading(false);
       return;
     }
-
     if (!rollcode || !password || !mobileNo) {
       setError("All fields are required.");
       setLoading(false);
       return;
     }
-
-    // Extract only numeric digits
     let rawNumber = mobileNo.replace(/\D/g, "");
-
-    // Ensure only last 10 digits are considered (handling country code issue)
     if (rawNumber.length > 10) {
       rawNumber = rawNumber.slice(-10);
     }
-
     if (rawNumber.length !== 10) {
       setError("Invalid mobile number! It must be exactly 10 digits.");
       setLoading(false);
       return;
     }
-
     try {
       const response = await axios.post(
         "http://localhost:5000/api/admin/add-students",
@@ -145,7 +137,6 @@ const CHeader = () => {
           },
         }
       );
-
       setMessage("Student registered successfully!");
       setTimeout(() => {
         setMessage("");
@@ -171,8 +162,17 @@ const CHeader = () => {
       return;
     }
 
-    if (!empId || !password) {
-      setError("Both Roll Code and Password are required.");
+    if (!empId || !password || !mobileNo) {
+      setError("All fields are required.");
+      setLoading(false);
+      return;
+    }
+    let rawNumber = mobileNo.replace(/\D/g, "");
+    if (rawNumber.length > 10) {
+      rawNumber = rawNumber.slice(-10);
+    }
+    if (rawNumber.length !== 10) {
+      setError("Invalid mobile number! It must be exactly 10 digits.");
       setLoading(false);
       return;
     }
@@ -183,6 +183,7 @@ const CHeader = () => {
         {
           empId: empId,
           password,
+          mobileNo: rawNumber, 
         },
         {
           headers: {
@@ -190,6 +191,12 @@ const CHeader = () => {
           },
         }
       );
+      setTimeout(() => {
+        setMessage("");
+        setEmpId("");
+        setPassword("");
+        setMobileNo("");
+      }, 2000);
       setMessage(response.data.message);
     } catch (error) {
       setError(error.response?.data?.message || "Registration failed");
@@ -200,7 +207,6 @@ const CHeader = () => {
 
   return (
     <div className="bg-gray-100">
-      {/* Sidebar */}
       <div
         className={`fixed top-0 left-0 h-full w-64 mt-32 bg-gray-300 shadow-lg transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
           } transition-transform duration-300 z-50`}
@@ -245,7 +251,6 @@ const CHeader = () => {
         </ul>
       </div>
 
-      {/* Header */}
       <header
         style={{ marginTop: "72px" }}
         className="fixed top-0 w-full bg-blue-600 text-white py-4 shadow-lg z-50"
@@ -261,8 +266,6 @@ const CHeader = () => {
             <FaUniversity className="text-2xl md:text-3xl" />
             <span className="hidden sm:inline">College Placement System</span>
           </h1>
-
-          {/* Action Buttons for Desktop */}
           <div className="hidden md:flex gap-4">
             <button className="hover:text-gray-200 transition" onClick={()=> setIsStudentRegisterOpen(true)}>
               Register Students
@@ -299,12 +302,7 @@ const CHeader = () => {
             )}
           </div>
         </div>
-      </header>
-
-     
-
-
-            
+      </header>          
 {
   isChangePasswordOpen && (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -369,7 +367,6 @@ const CHeader = () => {
     </div>
   )
 }
-
 {
         isStudentRegisterOpen && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
@@ -384,7 +381,6 @@ const CHeader = () => {
               <h2 className="text-2xl font-bold text-blue-600 mb-4">Register Student</h2>
 
               <form onSubmit={handleStudentRegister}>
-                {/* Roll Code Input */}
                 <div className="flex items-center border-2 rounded-md mb-3 p-2">
                   <User size={20} className="text-gray-500 mr-2" />
                   <input
@@ -442,7 +438,6 @@ const CHeader = () => {
             </div>
           </div>
         )
-
 }
 
 {
@@ -481,7 +476,21 @@ const CHeader = () => {
               className="w-full outline-none bg-transparent text-lg"
               required
             />
-          </div>
+                </div>
+                {/* Mobile Number Input with Country Code */}
+            <div className="flex items-center border-2 rounded-md mb-4 p-2">
+                  <PhoneInput
+                    country={"in"} // Default country (India)
+                    value={mobileNo}
+                    onChange={setMobileNo}
+                    inputClass="w-full text-lg outline-none bg-transparent"
+                    containerClass="w-full"
+                    inputStyle={{ width: "100%", border: "none", fontSize: "1rem" }}
+                    buttonStyle={{ border: "none" }}
+                    required
+                  />
+                </div>
+
           {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
           {message && <p className="text-green-500 text-sm mb-2">{message}</p>}
           <button

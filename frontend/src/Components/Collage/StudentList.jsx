@@ -180,7 +180,15 @@ const StudentList = () => {
     const handleUpdateStudent = async (e) => {
         e.preventDefault();
 
-        console.log("Updating Student:", editStudent); 
+        // 🚨 Remove password unless explicitly changed
+        const { password, ...updateData } = editStudent;
+
+        if (editStudent.newPassword) {
+            updateData.password = editStudent.newPassword; // Only send password if explicitly changed
+        }
+
+        console.log("Updating Student:", updateData); // Check the data before sending
+
         try {
             const token = localStorage.getItem("token");
             const response = await fetch(`http://localhost:5000/api/admin/students/update/${editStudent._id}`, {
@@ -189,11 +197,11 @@ const StudentList = () => {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify(editStudent), 
+                body: JSON.stringify(updateData), // ✅ Send only filtered data
             });
 
             const data = await response.json();
-            console.log("API Response:", data); 
+            console.log("API Response:", data);
 
             if (response.ok) {
                 alert("Student updated successfully!");
@@ -212,6 +220,7 @@ const StudentList = () => {
             alert("Failed to update student.");
         }
     };
+
 
 
 

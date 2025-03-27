@@ -19,7 +19,7 @@ const StudentSchema = new mongoose.Schema(
         country: { type: String },
         state: { type: String },
         city: { type: String },
-        profileImage: { type: String },
+        profileImage: { type: String, default: "/uploads/default.png" },
     },
     { timestamps: true }
 );
