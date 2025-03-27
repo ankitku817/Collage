@@ -1,6 +1,5 @@
 const jwt = require("jsonwebtoken");
 const Students = require("../models/Students");
-
 const verifyStudent = async (req, res, next) => {
     const authHeader = req.header("Authorization");
     if (!authHeader) {

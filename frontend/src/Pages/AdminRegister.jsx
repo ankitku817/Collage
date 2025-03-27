@@ -20,14 +20,25 @@ const AdminRegistration = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post("http://localhost:5000/api/admin/register", admin);
+            const response = await axios.post(
+                "http://localhost:5000/api/admin/register",
+                admin,
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
             alert("Admin Registered Successfully!");
-            setUniqueCode(response.data.uniqueCode); 
+            setUniqueCode(response.data.uniqueCode);
             setAdmin({ name: "", email: "", phone: "", password: "", collegeName: "" });
         } catch (error) {
+            console.error("Registration Error:", error.response?.data || error.message);
             alert("Error registering admin");
-        }
+        }ḥ
     };
+
 
     return (
         <div

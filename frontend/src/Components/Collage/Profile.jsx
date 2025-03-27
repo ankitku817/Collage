@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { FaUser, FaEnvelope, FaPhone, FaBuilding, FaCalendarAlt, FaEdit, FaSave, FaTimes, FaUpload } from "react-icons/fa";
+import { format } from "date-fns";
 
 const Profile = () => {
   const [admin, setAdmin] = useState(null);
@@ -31,7 +33,6 @@ const Profile = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        console.log("Admin Data:", response.data);
         setAdmin(response.data);
         setFormData({
           name: response.data.name || "",
@@ -80,6 +81,7 @@ const Profile = () => {
     if (formData.profileImage) {
       updatedFormData.append("profileImage", formData.profileImage);
     }
+
     try {
       const response = await fetch("http://localhost:5000/api/admin/admin-update-profile", {
         method: "PUT",
@@ -87,20 +89,13 @@ const Profile = () => {
         body: updatedFormData,
       });
 
-      const text = await response.text();
-      console.log("Response Text:", text);
-
-      try {
-        const data = JSON.parse(text);
-        if (!response.ok) {
-          throw new Error(data.message || "Profile update failed!");
-        }
-        setSuccessMessage("Profile updated successfully!");
-        setAdmin(data.updatedAdmin);
-        setIsEditing(false);
-      } catch (jsonError) {
-        setError("Unexpected server response. Check backend logs.");
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Profile update failed!");
       }
+      setSuccessMessage("Profile updated successfully!");
+      setAdmin(data.updatedAdmin);
+      setIsEditing(false);
     } catch (err) {
       setError(err.message || "An error occurred while updating the profile.");
     }
@@ -110,8 +105,8 @@ const Profile = () => {
   if (error) return <p className="text-red-500">{error}</p>;
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white shadow-md rounded-lg">
-      <h1 className="text-2xl font-bold mb-6 text-center">Admin Profile</h1>
+    <div className="max-w-2xl mx-auto p-6 bg-white shadow-lg rounded-lg">
+      <h1 className="text-3xl font-bold mb-6 text-center text-blue-600">Admin Profile</h1>
 
       {successMessage && <p className="text-green-500 mb-4">{successMessage}</p>}
       {error && <p className="text-red-500 mb-4">{error}</p>}
@@ -121,11 +116,11 @@ const Profile = () => {
           <img
             src={`http://localhost:5000/uploads/${admin.profileImage}`}
             alt="Profile"
-            className="w-24 h-24 rounded-full border"
+            className="w-28 h-28 rounded-full border-4 border-blue-400 shadow-lg"
           />
         ) : (
-          <div className="w-24 h-24 rounded-full bg-gray-300 flex items-center justify-center">
-            <span className="text-gray-600 text-3xl">👤</span>
+          <div className="w-28 h-28 rounded-full bg-gray-300 flex items-center justify-center text-5xl">
+            <FaUser className="text-gray-600" />
           </div>
         )}
       </div>
@@ -133,36 +128,36 @@ const Profile = () => {
       {isEditing ? (
         <div className="space-y-4">
           {[
-            { label: "Name", name: "name", type: "text" },
-            { label: "Email", name: "email", type: "email" },
-            { label: "Phone", name: "phone", type: "tel" },
-            { label: "College Name", name: "collegeName", type: "text" },
-            { label: "Date of Birth", name: "dateOfBirth", type: "date" },
-            { label: "Joining Date", name: "joiningDate", type: "date" },
+            { label: "Name", name: "name", type: "text", icon: <FaUser /> },
+            { label: "Email", name: "email", type: "email", icon: <FaEnvelope /> },
+            { label: "Phone", name: "phone", type: "tel", icon: <FaPhone /> },
+            { label: "College Name", name: "collegeName", type: "text", icon: <FaBuilding /> },
+            { label: "Date of Birth", name: "dateOfBirth", type: "date", icon: <FaCalendarAlt /> },
+            { label: "Joining Date", name: "joiningDate", type: "date", icon: <FaCalendarAlt /> },
           ].map((field) => (
-            <div key={field.name} className="flex flex-col">
-              <label className="font-semibold">{field.label}</label>
+            <div key={field.name} className="flex items-center border rounded p-2">
+              {field.icon}
               <input
                 type={field.type}
                 name={field.name}
                 value={formData[field.name]}
                 onChange={handleInputChange}
-                className="p-2 border rounded w-full"
+                className="ml-2 w-full outline-none"
               />
             </div>
           ))}
 
-          <div className="flex flex-col">
-            <label className="font-semibold">Profile Image</label>
-            <input type="file" accept="image/*" onChange={handleFileChange} className="p-2 border rounded" />
+          <div className="flex items-center border rounded p-2">
+            <FaUpload />
+            <input type="file" accept="image/*" onChange={handleFileChange} className="ml-2 w-full outline-none" />
           </div>
 
           <div className="flex gap-4 mt-4">
-            <button onClick={handleUpdateProfile} className="bg-blue-500 text-white px-4 py-2 rounded w-full">
-              Save Changes
+            <button onClick={handleUpdateProfile} className="bg-blue-500 text-white px-4 py-2 rounded w-full flex items-center justify-center">
+              <FaSave className="mr-2" /> Save Changes
             </button>
-            <button onClick={() => setIsEditing(false)} className="bg-gray-500 text-white px-4 py-2 rounded w-full">
-              Cancel
+            <button onClick={() => setIsEditing(false)} className="bg-gray-500 text-white px-4 py-2 rounded w-full flex items-center justify-center">
+              <FaTimes className="mr-2" /> Cancel
             </button>
           </div>
         </div>
@@ -171,20 +166,20 @@ const Profile = () => {
           {admin ? (
             <>
               {[
-                { label: "Name", value: admin.name },
-                { label: "Email", value: admin.email },
-                { label: "Phone", value: admin.phone },
-                { label: "College Name", value: admin.collegeName },
-                { label: "Date of Birth", value: admin.dateOfBirth || "N/A" },
-                { label: "Joining Date", value: admin.joiningDate || "N/A" },
+                { label: "Name", value: admin.name, icon: <FaUser /> },
+                { label: "Email", value: admin.email, icon: <FaEnvelope /> },
+                { label: "Phone", value: admin.phone, icon: <FaPhone /> },
+                { label: "College", value: admin.collegeName, icon: <FaBuilding /> },
+                { label: "Date of Birth", value: format(new Date(admin.dateOfBirth), "dd MMM yyyy"), icon: <FaCalendarAlt /> },
+                { label: "Joining Date", value: format(new Date(admin.joiningDate), "dd MMM yyyy"), icon: <FaCalendarAlt /> },
               ].map((field) => (
-                <p key={field.label} className="border-b pb-2">
-                  <strong>{field.label}:</strong> {field.value}
+                <p key={field.label} className="border-b pb-2 flex items-center">
+                  {field.icon} <span className="ml-2"><strong>{field.label}:</strong> {field.value}</span>
                 </p>
               ))}
 
-              <button onClick={() => setIsEditing(true)} className="bg-green-500 text-white px-4 py-2 rounded mt-4 w-full">
-                Edit Profile
+              <button onClick={() => setIsEditing(true)} className="bg-green-500 text-white px-4 py-2 rounded mt-4 w-full flex items-center justify-center">
+                <FaEdit className="mr-2" /> Edit Profile
               </button>
             </>
           ) : (

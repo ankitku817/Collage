@@ -11,54 +11,16 @@ const Students = require("../models/Students");
 const Employee = require("../models/Employee");
 const verifyAdmin = require("../middleware/verifyAdmin");
 const verifyStudent = require("../middleware/verifyStudent");
-
 const router = express.Router();
-
-// Ensure Upload Directory Exists
 const uploadDir = path.join(__dirname, "../uploads");
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
-
-// Multer Storage Configuration
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, "uploads/"),
     filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
 });
-
 const upload = multer({ storage });
-
-// Twilio Setup (For OTP)
-const client = new twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH_TOKEN);
-const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
-
-
-
-const sendEmailOTP = async (email, otp) => {
-    const transporter = nodemailer.createTransport({
-        service: "Gmail",
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS,
-        },
-    });
-
-    const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: email,
-        subject: "Your Password Change OTP",
-        text: `Your OTP for changing password is: ${otp}`,
-    };
-
-    await transporter.sendMail(mailOptions);
-};
-const sendSMSOTP = async (phone, otp) => {
-    await client.messages.create({
-        body: `Your OTP for changing password is: ${otp}`,
-        from: process.env.TWILIO_PHONE_NUMBER,
-        to: phone,
-    });
-};
 const generateUniqueCode = async () => {
     let uniqueCode;
     let isUnique = false;
@@ -71,7 +33,6 @@ const generateUniqueCode = async () => {
 
     return uniqueCode;
 };
-
 router.post("/register", async (req, res) => {
     try {
         const { name, email, phone, password, collegeName } = req.body;
@@ -299,8 +260,53 @@ router.get("/students", verifyAdmin, async (req, res) => {
     }
 });
 
+router.put("/students/update/:id", verifyAdmin, async (req, res) => {
+    console.log("Received update request for ID:", req.params.id);
+    console.log("Request body:", req.body); 
 
+    try {
+        const { id } = req.params;
+        let updateData = { ...req.body };
 
+        // Hash password if it's being updated
+        if (updateData.password) {
+            updateData.password = await bcrypt.hash(updateData.password, 10);
+        }
+
+        const updatedStudent = await Students.findByIdAndUpdate(id, updateData, { new: true });
+
+        if (!updatedStudent) {
+            return res.status(404).json({ message: "Student not found" });
+        }
+
+        res.status(200).json({ message: "Student updated successfully", student: updatedStudent });
+    } catch (error) {
+        console.error("Error updating student:", error); // Log the error
+        res.status(500).json({ message: "Error updating student", error: error.message });
+    }
+});
+
+// router.put("/update/:id", verifyAdmin, async (req, res) => {
+//     try {
+//         const { id } = req.params;
+//         let updateData = { ...req.body };
+
+//         // Hash password if it's being updated
+//         if (updateData.password) {
+//             updateData.password = await bcrypt.hash(updateData.password, 10);
+//         }
+
+//         const updatedStudent = await Students.findByIdAndUpdate(id, updateData, { new: true });
+
+//         if (!updatedStudent) {
+//             return res.status(404).json({ message: "Student not found" });
+//         }
+
+//         res.status(200).json({ message: "Student updated successfully", student: updatedStudent });
+//     } catch (error) {
+//         res.status(500).json({ message: "Error updating student", error: error.message });
+//     }
+// });
 router.get("/employees", verifyAdmin, async (req, res) => {
     try {
         const employees = await Employee.find();

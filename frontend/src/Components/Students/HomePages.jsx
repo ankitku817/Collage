@@ -1,7 +1,82 @@
-import React from "react";
-import { Link } from "react-router-dom";
+
+import React, { useState } from "react";
+import axios from "axios";
+import {
+    FaUniversity,
+    FaUserGraduate,
+    FaChartBar,
+    FaBriefcase,
+    FaBook,
+    FaBars,
+    FaUsers,
+    FaUser
+} from "react-icons/fa";
+import { X, User, LogOut, Lock, Loader2 } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 
 const HomePages = () => {
+    const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+    const [oldPassword, setOldPassword] = useState(false);
+    const [newPassword, setNewPassword] = useState(false);
+    const [confirmPassword, setConfirmPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
+      const [error, setError] = useState("");
+    const [message, setMessage] = useState("");
+    
+    const handleChangePassword = async () => {
+        if (!oldPassword || !newPassword || !confirmPassword) {
+            setError("All fields are required.");
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            setError("New password and confirm password do not match.");
+            return;
+        }
+
+        try {
+            setLoading(true);
+
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                setError("You are not logged in!");
+                setLoading(false);
+                return;
+            }
+
+            const response = await axios.post(
+                "http://localhost:5000/api/student/change-password",
+                { oldPassword, newPassword, confirmPassword },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            setMessage(response.data.message);
+            setError("");
+            setLoading(false);
+
+            // Auto-close modal after 3 seconds
+            setTimeout(() => {
+                setIsChangePasswordOpen(false);
+                setMessage("");
+            }, 3000);
+
+        } catch (err) {
+            setError(err.response?.data?.message || "Failed to change password.");
+            setLoading(false);
+        }
+    };
+
+
+
+    
     return (
         <div className="bg-gray-100 min-h-screen">
             {/* Navbar */}
@@ -10,6 +85,9 @@ const HomePages = () => {
                 <div className="space-x-6">
                     <Link to="/student-homepage" className="hover:underline">Home</Link>
                     <Link to="/student-homepage/jobs" className="hover:underline">Jobs</Link>
+                    <button className="hover:text-gray-200 transition" onClick={() => setIsChangePasswordOpen(true)}>
+                        Change Password
+                    </button>
                     <Link to="/student-homepage/profile" className="hover:underline">Profile</Link>
                 </div>
             </nav>
@@ -46,11 +124,68 @@ const HomePages = () => {
                     <img src="https://tse1.mm.bing.net/th?id=OIP.uJ7t8IOM9eroFbp5zKIGTQHaEq&pid=Api&P=0&h=180" alt="TCS" className="h-12" />
                 </div>
             </section>
+            {
+                 isChangePasswordOpen && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+                            <h2 className="text-xl font-bold mb-4">Change Password</h2>
+
+                            {/* Show Success or Error Messages */}
+                            {error && <p className="text-red-500">{error}</p>}
+                            {message && <p className="text-green-500">{message}</p>}
+
+                            {!message && (
+                                <>
+                                    <input
+                                        type="password"
+                                        placeholder="Enter Old Password"
+                                        className="w-full p-2 border rounded mb-2"
+                                        value={oldPassword}
+                                        onChange={(e) => setOldPassword(e.target.value)}
+                                    />
+                                    <input
+                                        type="password"
+                                        placeholder="New Password"
+                                        className="w-full p-2 border rounded mb-2"
+                                        value={newPassword}
+                                        onChange={(e) => setNewPassword(e.target.value)}
+                                    />
+                                    <input
+                                        type="password"
+                                        placeholder="Confirm Password"
+                                        className="w-full p-2 border rounded mb-4"
+                                        value={confirmPassword}
+                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                    />
+
+                                    <button
+                                        className="bg-green-600 text-white w-full p-2 rounded"
+                                        onClick={handleChangePassword}
+                                    >
+                                        {loading ? "Changing Password..." : "Change Password"}
+                                    </button>
+                                </>
+                            )}
+
+                            {!message && (
+                                <button
+                                    className="mt-2 text-red-500 hover:underline"
+                                    onClick={() => setIsChangePasswordOpen(false)}
+                                >
+                                    Cancel
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+
+            
         </div>
+
+        
     );
 };
-
-// Job Card Component
 const JobCard = ({ title, company, location }) => {
     return (
         <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition">
