@@ -78,6 +78,7 @@ const Profile = () => {
     updatedFormData.append("collegeName", formData.collegeName);
     updatedFormData.append("dateOfBirth", formData.dateOfBirth);
     updatedFormData.append("joiningDate", formData.joiningDate);
+    
     if (formData.profileImage) {
       updatedFormData.append("profileImage", formData.profileImage);
     }

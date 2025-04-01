@@ -157,6 +157,25 @@ router.put("/students/update/:id", verifyAdmin, upload.single("profileImage"), a
     }
 });
 
+router.get("/students", verifyAdmin, async (req, res) => {
+    try {
+        const students = await Students.find();
+        res.status(200).json(students);
+    } catch (error) {
+        console.error("Error fetching students:", error);
+        res.status(500).json({ message: "Server error!" });
+    }
+});
+
+router.get("/employees", verifyAdmin, async (req, res) => {
+    try {
+        const employees = await Employee.find();
+        res.status(200).json(employees);
+    } catch (error) {
+        console.error("Error fetching employees:", error);
+        res.status(500).json({ message: "Server error!" });
+    }
+});
 router.post("/login", async (req, res) => {
     try {
         const { uniqueCode, password } = req.body;
@@ -192,7 +211,6 @@ router.post("/login", async (req, res) => {
         res.status(500).json({ message: "Server error!" });
     }
 });
-
 router.post("/request-password-change", async (req, res) => {
     try {
         const { uniqueCode } = req.body;
@@ -217,7 +235,6 @@ router.post("/request-password-change", async (req, res) => {
         res.status(500).json({ message: "Failed to send OTP." });
     }
 });
-
 router.post("/change-password", async (req, res) => {
     try {
         const { uniqueCode, otp, newPassword } = req.body;
@@ -243,7 +260,6 @@ router.post("/change-password", async (req, res) => {
         res.status(500).json({ message: "Failed to change password." });
     }
 });
-
 router.post("/add-students", verifyAdmin, async (req, res) => {
     try {
         const { rollcode, password, mobileNo } = req.body;
@@ -270,34 +286,25 @@ router.post("/add-students", verifyAdmin, async (req, res) => {
         res.status(500).json({ message: "Server error!" });
     }
 });
-router.get("/students", verifyAdmin, async (req, res) => {
-    try {
-        const students = await Students.find(); 
-        res.status(200).json(students);
-    } catch (error) {
-        console.error("Error fetching students:", error);
-        res.status(500).json({ message: "Server error!" });
-    }
-});
-router.get("/employees", verifyAdmin, async (req, res) => {
-    try {
-        const employees = await Employee.find();
-        res.status(200).json(employees);
-    } catch (error) {
-        console.error("Error fetching employees:", error);
-        res.status(500).json({ message: "Server error!" });
-    }
-});
-
 router.post("/register-employee", verifyAdmin, async (req, res) => {
     try {
-        const { empId, password } = req.body;
+        const { empId, password, mobileNo } = req.body;
+        if (!empId || empId.length !== 8) {
+            return res.status(400).json({ message: "Employee id must be exactly 8 characters long!" });
+        }
+        if (!/^\d{10}$/.test(mobileNo)) {
+            return res.status(400).json({ message: "Invalid mobile number! It must be exactly 10 digits." });
+        }
         const existingEmployee = await Employee.findOne({ empId });
         if (existingEmployee) {
             return res.status(400).json({ message: "Employee with this Employee ID already exists!" });
         }
-
-        const newEmployee = new Employee({ empId, password });
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newEmployee = new Employee({
+            empId: String(empId),
+            password: hashedPassword,
+            mobileNo: String(mobileNo),
+        });
         await newEmployee.save();
 
         res.status(201).json({ message: "Employee registered successfully!" });
@@ -326,7 +333,6 @@ router.post("/employee-login", async (req, res) => {
             process.env.JWT_SECRET || "your_secret_key",
             { expiresIn: "7d" }
         );
-
         res.status(200).json({
             message: "Login successful!",
             token,

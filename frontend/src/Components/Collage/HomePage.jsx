@@ -35,6 +35,34 @@ const HomePage = () => {
     return (
         <div className="min-h-screen bg-gray-100">
             <CHeader />
+            <button
+                className="lg:hidden fixed top-4 left-4 z-50 text-gray-800 p-2 bg-white shadow-lg rounded-full"
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            >
+                {isSidebarOpen ? <X size={24} /> : <FaBars size={24} />}
+            </button>
+            {isSidebarOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white w-64 p-6 shadow-lg rounded-lg">
+                        <button className="text-red-500 absolute top-4 right-4" onClick={() => setIsSidebarOpen(false)}>
+                            <X size={24} />
+                        </button>
+                        <ul className="mt-6 space-y-4 text-center">
+                            <li>
+                                <Link to="/" className="text-gray-800 hover:text-blue-600">Home</Link>
+                            </li>
+                            <li>
+                                <Link to="/students" className="text-gray-800 hover:text-blue-600">Students</Link>
+                            </li>
+                            <li>
+                                <Link to="/statistics" className="text-gray-800 hover:text-blue-600">Statistics</Link>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            )}
+
+            {/* Main Content */}
             <div className="container mx-auto px-6 py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                 {/* Ongoing Recruitments */}
                 <div className="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center hover:shadow-2xl transition">

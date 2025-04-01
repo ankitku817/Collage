@@ -6,7 +6,6 @@ const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const Students = require("../models/Students");
 const verifyStudent = require("../middleware/verifyStudent");
-
 const router = express.Router();
 const uploadDir = path.join(__dirname, "../uploads");
 if (!fs.existsSync(uploadDir)) {
@@ -17,48 +16,24 @@ const storage = multer.diskStorage({
     filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
 });
 const upload = multer({ storage });
-router.put("/student-update-profile", verifyStudent, upload.single("profileImage"), async (req, res) => {
+
+router.put("/update-profile", verifyStudent, async (req, res) => {
     try {
-        const studentId = req.studentId || req.body.studentId;  // Ensure the ID is taken correctly
+        const { skills, headline } = req.body;
 
-        if (!studentId) {
-            return res.status(400).json({ message: "Student ID is required!" });
+        const student = await Students.findById(req.studentId);
+        if (!student) {
+            return res.status(404).json({ message: "Student not found!" });
         }
+        student.skills = skills;
+        student.headline = headline || "";
 
-        const existingStudent = await Students.findById(studentId);
-        if (!existingStudent) {
-            return res.status(404).json({ message: "Student not found." });
-        }
+        await student.save();
 
-        const { name, fathersName, collageRollNo, gender, dateOfBirth, mobileNo, emailId, course, department, semester, batch, address } = req.body;
-        const profileImage = req.file ? req.file.filename : existingStudent.profileImage; // Keep old image if not updated
-
-        const updatedFields = {
-            ...(name && { name }),
-            ...(fathersName && { fathersName }),
-            ...(collageRollNo && { collageRollNo }),
-            ...(gender && { gender }),
-            ...(dateOfBirth && { dateOfBirth }),
-            ...(mobileNo && { mobileNo }),
-            ...(emailId && { emailId }),
-            ...(course && { course }),
-            ...(department && { department }),
-            ...(semester && { semester }),
-            ...(batch && { batch }),
-            ...(address && { address }),
-            ...(profileImage && { profileImage }),
-        };
-
-        const updatedStudent = await Students.findByIdAndUpdate(
-            studentId,
-            { $set: updatedFields },
-            { new: true, runValidators: true }
-        );
-
-        res.status(200).json({ message: "Student data updated successfully!", student: updatedStudent });
+        res.status(200).json({ message: "Profile updated successfully!", student });
     } catch (error) {
-        console.error("Error updating profile:", error);
-        res.status(500).json({ message: "Server Error!", error: error.message });
+        console.error("Profile update error:", error.message);
+        res.status(500).json({ message: "Server error!" });
     }
 });
 router.post("/login-student", async (req, res) => {
@@ -90,7 +65,6 @@ router.post("/login-student", async (req, res) => {
         res.status(500).json({ message: "Server error!" });
     }
 });
-
 router.get("/students-profile", verifyStudent, async (req, res) => {
     try {
         const student = await Students.findById(req.studentId).select("-password"); 
@@ -105,53 +79,6 @@ router.get("/students-profile", verifyStudent, async (req, res) => {
         res.status(500).json({ message: "Server error!" });
     }
 });
-
-router.put("/student-update-profile", verifyStudent, upload.single("profileImage"), async (req, res) => {
-    try {
-        const studentId = req.studentId || req.body.studentId;  // Ensure the ID is taken correctly
-
-        if (!studentId) {
-            return res.status(400).json({ message: "Student ID is required!" });
-        }
-
-        const existingStudent = await Students.findById(studentId);
-        if (!existingStudent) {
-            return res.status(404).json({ message: "Student not found." });
-        }
-
-        const { name, fathersName, collageRollNo, gender, dateOfBirth, mobileNo, emailId, course, department, semester, batch, address } = req.body;
-        const profileImage = req.file ? req.file.filename : existingStudent.profileImage; // Keep old image if not updated
-
-        const updatedFields = {
-            ...(name && { name }),
-            ...(fathersName && { fathersName }),
-            ...(collageRollNo && { collageRollNo }),
-            ...(gender && { gender }),
-            ...(dateOfBirth && { dateOfBirth }),
-            ...(mobileNo && { mobileNo }),
-            ...(emailId && { emailId }),
-            ...(course && { course }),
-            ...(department && { department }),
-            ...(semester && { semester }),
-            ...(batch && { batch }),
-            ...(address && { address }),
-            ...(profileImage && { profileImage }),
-        };
-
-        const updatedStudent = await Students.findByIdAndUpdate(
-            studentId,
-            { $set: updatedFields },
-            { new: true, runValidators: true }
-        );
-
-        res.status(200).json({ message: "Student data updated successfully!", student: updatedStudent });
-    } catch (error) {
-        console.error("Error updating profile:", error);
-        res.status(500).json({ message: "Server Error!", error: error.message });
-    }
-});
-
-
 router.post("/change-password", verifyStudent, async (req, res) => {
     try {
         const { oldPassword, newPassword, confirmPassword } = req.body;

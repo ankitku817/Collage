@@ -177,17 +177,62 @@ const StudentList = () => {
         }
     };
 
+    // const handleUpdateStudent = async (e) => {
+    //     e.preventDefault();
+    //     const { password, ...updateData } = editStudent;
+
+    //     if (editStudent.newPassword) {
+    //         updateData.password = editStudent.newPassword;
+    //     }
+
+    //     console.log("Updating Student:", updateData);
+
+    //     try {
+    //         const token = localStorage.getItem("token");
+    //         const response = await fetch(`http://localhost:5000/api/admin/students/update/${editStudent._id}`, {
+    //             method: "PUT",
+    //             headers: {
+    //                 "Content-Type": "application/json",
+    //                 Authorization: `Bearer ${token}`,
+    //             },
+    //             body: JSON.stringify(updateData), 
+    //         });
+
+    //         const data = await response.json();
+    //         console.log("API Response:", data);
+
+    //         if (response.ok) {
+    //             alert("Student updated successfully!");
+    //             setStudents((prevStudents) =>
+    //                 prevStudents.map((student) =>
+    //                     student._id === editStudent._id ? { ...student, ...data.student } : student
+    //                 )
+    //             );
+    //             setIsEditModalOpen(false);
+    //         } else {
+    //             alert(data.error || "Failed to update student.");
+    //         }
+    //     } catch (error) {
+    //         console.error("Error updating student:", error);
+    //         alert("Failed to update student.");
+    //     }
+    // };
+
     const handleUpdateStudent = async (e) => {
         e.preventDefault();
-
-        // 🚨 Remove password unless explicitly changed
         const { password, ...updateData } = editStudent;
-
-        if (editStudent.newPassword) {
-            updateData.password = editStudent.newPassword; // Only send password if explicitly changed
+        const currentMonth = new Date().getMonth() + 1; 
+        if (editStudent.semester === 1 && currentMonth === 1) {
+            updateData.semester = 2; 
+        } else if (editStudent.semester === 2 && currentMonth === 8) {
+            updateData.semester = 3;
         }
 
-        console.log("Updating Student:", updateData); // Check the data before sending
+        if (editStudent.newPassword) {
+            updateData.password = editStudent.newPassword;
+        }
+
+        console.log("Updating Student:", updateData);
 
         try {
             const token = localStorage.getItem("token");
@@ -197,7 +242,7 @@ const StudentList = () => {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify(updateData), // ✅ Send only filtered data
+                body: JSON.stringify(updateData),
             });
 
             const data = await response.json();
@@ -210,7 +255,6 @@ const StudentList = () => {
                         student._id === editStudent._id ? { ...student, ...data.student } : student
                     )
                 );
-
                 setIsEditModalOpen(false);
             } else {
                 alert(data.error || "Failed to update student.");
@@ -220,8 +264,6 @@ const StudentList = () => {
             alert("Failed to update student.");
         }
     };
-
-
 
 
     const handleInputChange = (e) => {
@@ -395,6 +437,46 @@ const StudentList = () => {
                                         .toISOString()
                                         .split("T")[0]}
                                 />
+                                <div className="flex flex-col">
+                                    <label className="font-medium text-gray-700">📆 Semester</label>
+                                    <select
+                                        name="semester"
+                                        value={updatedStudent.semester || ""}
+                                        onChange={handleInputChange}
+                                        className="border p-2 rounded-lg focus:ring-2 focus:ring-blue-400"
+                                        required
+                                    >
+                                        <option value="">Select Semester</option>
+                                        {[...Array(8)].map((_, i) => (
+                                            <option key={i + 1} value={i + 1}>
+                                                {i + 1}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Batch Year */}
+                                <div className="flex flex-col">
+                                    <label className="font-medium text-gray-700">🎓 Batch Year</label>
+                                    <select
+                                        name="batchYear"
+                                        value={editStudent?.batchYear || ""}
+                                        onChange={handleInputChange}
+                                        className="border p-2 rounded-lg focus:ring-2 focus:ring-blue-400"
+                                        required
+                                    >
+                                        <option value="">Select Batch Year</option>
+                                        {[...Array(25)].map((_, i) => {
+                                            const year = 2000 + i;
+                                            return (
+                                                <option key={year} value={year}>
+                                                    {year}
+                                                </option>
+                                            );
+                                        })}
+                                    </select>
+                                </div>
+
                                 <div className="flex flex-col">
                                     <label className="font-medium text-gray-700">🚻 Gender</label>
                                     <select

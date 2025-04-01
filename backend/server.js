@@ -8,6 +8,7 @@ const path = require("path");
 // Import Routes
 const adminRoutes = require("./routes/adminRoutes");
 const studentsRoutes = require("./routes/studentsRoutes");
+const employeRoutes = require("./routes/employeeRoutes");
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -37,9 +38,8 @@ mongoose
 // API Routes
 app.use("/api/admin", adminRoutes);
 app.use("/api/student", studentsRoutes);
-app.use("/api/admin/check-code", adminRoutes); // ✅ Fixed the route
-
-// Root Route
+app.use("/api/employee/",employeRoutes);
+app.use("/api/admin/check-code", adminRoutes); 
 app.get("/", (req, res) => {
     res.send("Backend is working successfully!!!");
 });
