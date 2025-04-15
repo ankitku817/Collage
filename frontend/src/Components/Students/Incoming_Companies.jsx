@@ -4,22 +4,29 @@ function Incoming_Companies() {
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showForm, setShowForm] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState(null);
-  const [newCompany, setNewCompany] = useState({
+  const [resumeFile, setResumeFile] = useState(null);
+  const [apply, setApply] = useState(false);
+  
+  const [formData, setFormData] = useState({
     name: "",
-    industry: "",
-    contact: "",
-    location: "",
-    arrivalDate: "",
-    departureDate: "",
-    eligibility: "",
-    passoutYear: "",
-    batch: "",
-    jobDescription: "",
-    rounds: [],
-    companyImage: null,
-    companyPdf: null,
+    email: "",
+    phone: "",
+    universityRollNo: "",
+    collegeRollNo: "",
+    gender: "",
+    dob: "",
+    address: "",
+    branch: "",
+    passingYear: "",
+    tenthScore: "",
+    twelfthScore: "",
+    graduationScore: "",
+    pgScore: "",
+    about: "",
   });
+
   useEffect(() => {
     const fetchCompanies = async () => {
       const token = localStorage.getItem("token");
@@ -58,64 +65,11 @@ function Incoming_Companies() {
     });
   };
 
-  // const handleFileChange = (e) => {
-  //   setNewCompany({ ...newCompany, companyImage: e.target.files[0] });
-  // };
-
   const handleFileChange = (e) => {
     const { name, files } = e.target;
     setNewCompany((prev) => ({ ...prev, [name]: files[0] }));
   };
 
-
-  const addCompany = async () => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      console.error("❌ No token found. Please log in.");
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("name", newCompany.name);
-    formData.append("industry", newCompany.industry);
-    formData.append("contact", newCompany.contact);
-    formData.append("location", newCompany.location);
-    formData.append("arrivalDate", newCompany.arrivalDate);
-    formData.append("departureDate", newCompany.departureDate);
-    formData.append("jobDescription", newCompany.jobDescription);
-    // formData.append("companyPdf", newCompany.companyPdf);
-
-    if (newCompany.companyPdf instanceof File) {
-      formData.append("companyPdf", newCompany.companyPdf);
-    }
-    formData.append("eligibilityCriteria", JSON.stringify({
-      percentage: newCompany.percentage || 60,
-      passOutYear: newCompany.passOutYear || 2025,
-      branch: newCompany.branch || "B.Tech CSE"
-    }));
-    formData.append("rounds", JSON.stringify(newCompany.rounds));
-
-    if (newCompany.companyImage instanceof File) {
-      formData.append("companyImage", newCompany.companyImage);
-    } else {
-      console.error("❌ Invalid file selected:", newCompany.companyImage);
-      return;
-    }
-
-    try {
-      const response = await axios.post("http://localhost:5000/api/employee/companies", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      console.log("✅ Company added successfully", response.data);
-    } catch (error) {
-      console.error("❌ Failed to add company", error.response?.data || error.message);
-    }
-  };
   const handleView = (company) => {
     setSelectedCompany(company);
   };
@@ -124,30 +78,83 @@ function Incoming_Companies() {
     setSelectedCompany(null);
   };
 
+  const handleApply = (company) => {
+    setSelectedCompany(company);
+    setShowForm(true);
+  };
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+  const handleResumeUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setResumeFile(file);
+    }
+  };
+  const handleSubmitApplication = async (e) => {
+    e.preventDefault();
 
-  const deleteCompany = async (id) => {
     const token = localStorage.getItem("token");
     if (!token) {
-      setError("Unauthorized: No token found");
+      alert("Unauthorized: Please login first.");
       return;
     }
 
+    const eligibility = selectedCompany.eligibilityCriteria;
+    const isBranchValid = eligibility.branch === formData.branch;
+    const isPassingYearValid = parseInt(formData.passingYear) === parseInt(eligibility.passOutYear);
+    const isPercentageValid = parseFloat(formData.graduationScore) >= parseFloat(eligibility.percentage);
+
+    if (!isBranchValid || !isPassingYearValid || !isPercentageValid) {
+      let errorMsg = "You are not eligible to apply due to the following reasons:\n";
+      if (!isBranchValid) errorMsg += "- Your branch does not match the required branch.\n";
+      if (!isPassingYearValid) errorMsg += "- Your passing year does not match the required year.\n";
+      if (!isPercentageValid) errorMsg += `- Your graduation percentage (${formData.graduationScore}%) is less than the required ${eligibility.percentage}%.\n`;
+      alert(errorMsg);
+      
+      return;
+    }
+
+    const data = new FormData();
+    data.append("companyId", selectedCompany._id);
+    data.append("name", formData.name);
+    data.append("email", formData.email);
+    data.append("phone", formData.phone);
+    data.append("resume", resumeFile);
+    data.append("universityRollNo",formData.universityRollNo);
+    data.append("collegeRollNo", formData.collegeRollNo);
+    data.append("dob", formData.dob);
+    data.append("banch", formData.branch);
+    data.append("passingYear", formData.passingYear);
+    data.append("tenthScore", formData.tenthScore);
+    data.append("twelfthScore", formData.twelfthScore);
+    data.append("graduationScore", formData.graduationScore);
+    data.append("pgScore", formData.pgScore);
+    data.append("about", formData.about);
+
     try {
-      await axios.delete(`http://localhost:5000/api/employee/companies/${id}`, {
+      const res = await axios.post("http://localhost:5000/api/student/apply", data, {
         headers: {
           Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
         },
       });
-
-      setCompanies(companies.filter((company) => company._id !== id));
-    } catch (error) {
-      setError("Failed to delete company.");
+      alert("Application submitted!");
+      setApply(true)
+      setShowForm(false);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to apply");
     }
   };
 
 
+
+
   if (loading) return <p className="text-center">Loading companies... 🕒</p>;
   if (error) return <p className="text-red-600 text-center">{error} ❌</p>;
+  
   return (
     <div className="p-4 md:p-6 bg-gradient-to-r from-blue-100 to-green-100 min-h-screen">
       <h1 className="text-2xl sm:text-3xl font-bold text-center text-blue-800 mb-6">
@@ -164,13 +171,13 @@ function Incoming_Companies() {
           <table className="min-w-full border-collapse border border-gray-300">
             <thead className="bg-gray-200 text-sm sm:text-base">
               <tr>
-                <th className="border p-2">Name</th>
-                <th className="border p-2">Industry</th>
-                <th className="border p-2">Contact</th>
-                <th className="border p-2">Arrival</th>
-                <th className="border p-2">Departure</th>
-                <th className="border p-2">Image</th>
-                <th className="border p-2">Job Description</th>
+                <th className="border p-10">Name</th>
+                <th className="border p-10">Industry</th>
+                <th className="border p-8">Contact</th>
+                <th className="border p-8">Arrival</th>
+                <th className="border p-8">Departure</th>
+                <th className="border p-16">Image</th>
+                <th className="border p-0">Job Description</th>
                 <th className="border p-2">Actions</th>
               </tr>
             </thead>
@@ -182,12 +189,12 @@ function Incoming_Companies() {
                   <td className="border p-2">{company.contact}</td>
                   <td className="border p-2">{company.arrivalDate?.slice(0, 10)}</td>
                   <td className="border p-2">{company.departureDate?.slice(0, 10)}</td>
-                  <td className="border p-2">
+                  <td className="border p-0">
                     {company.companyImage && (
                       <img
                         src={`http://localhost:5000/uploads/${company.companyImage}`}
                         alt="Company"
-                        className="w-32 h-16 object-cover mx-auto"
+                        className="w-44 h-16 object-cover mx-auto"
                       />
                     )}
                   </td>
@@ -199,12 +206,19 @@ function Incoming_Companies() {
                     >
                       View
                     </button>
-                    <button
+                    if({<button
                       className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded"
-                      onClick={() => deleteCompany(company._id)}
+                      onClick={() => handleApply(company)}
+                      
                     >
-                      Delete
-                    </button>
+                      Apply
+                    </button>}):{
+                      <button
+                        className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded"
+
+                      >Applied
+                        </button>
+                    }
                   </td>
                 </tr>
               ))}
@@ -215,7 +229,7 @@ function Incoming_Companies() {
         {/* Modal */}
         {selectedCompany && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 px-4">
-            <div className="bg-white p-4 sm:p-6 rounded-lg w-full max-w-md relative overflow-y-auto max-h-[90vh]">
+            <div className="bg-white p-4 sm:p-6 rounded-lg w-full max-w-xl relative overflow-y-auto max-h-[90vh]">
               <button
                 onClick={handleClose}
                 className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
@@ -272,6 +286,130 @@ function Incoming_Companies() {
             </div>
           </div>
         )}
+
+
+        {showForm && selectedCompany && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 px-4">
+            <div className="bg-white p-4 sm:p-6 rounded-lg w-full max-w-xl relative overflow-y-auto max-h-[90vh]">
+              <button
+                onClick={() => setShowForm(false)}
+                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+              >
+                ✖
+              </button>
+              <h2 className="text-xl font-semibold mb-4 text-center">Apply to {selectedCompany.name}</h2>
+              <form onSubmit={handleSubmitApplication} className="space-y-4">
+
+                {/* Full Name */}
+                <div>
+                  <label className="block text-sm font-medium">Full Name*</label>
+                  <input type="text" name="name" value={formData.name} onChange={handleFormChange} required className="w-full border border-gray-300 rounded px-3 py-2" />
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label className="block text-sm font-medium">Email*</label>
+                  <input type="email" name="email" value={formData.email} onChange={handleFormChange} required className="w-full border border-gray-300 rounded px-3 py-2" />
+                </div>
+
+                {/* University Roll No */}
+                <div>
+                  <label className="block text-sm font-medium">University Roll No*</label>
+                  <input type="text" name="universityRollNo" value={formData.universityRollNo} onChange={handleFormChange} required className="w-full border border-gray-300 rounded px-3 py-2" />
+                </div>
+
+                {/* College Roll No */}
+                <div>
+                  <label className="block text-sm font-medium">College Roll No*</label>
+                  <input type="text" name="collegeRollNo" value={formData.collegeRollNo} onChange={handleFormChange} required className="w-full border border-gray-300 rounded px-3 py-2" />
+                </div>
+
+                {/* Phone Number */}
+                <div>
+                  <label className="block text-sm font-medium">Phone Number*</label>
+                  <input type="text" name="phone" value={formData.phone} onChange={handleFormChange} required className="w-full border border-gray-300 rounded px-3 py-2" />
+                </div>
+
+                {/* Gender */}
+                <div>
+                  <label className="block text-sm font-medium">Gender*</label>
+                  <select name="gender" value={formData.gender} onChange={handleFormChange} required className="w-full border border-gray-300 rounded px-3 py-2">
+                    <option value="">Select an option</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                {/* Date of Birth */}
+                <div>
+                  <label className="block text-sm font-medium">Date of Birth*</label>
+                  <input type="date" name="dob" value={formData.dob} onChange={handleFormChange} required className="w-full border border-gray-300 rounded px-3 py-2" />
+                </div>
+
+                {/* Permanent Address */}
+                <div>
+                  <label className="block text-sm font-medium">Permanent Address*</label>
+                  <textarea name="address" value={formData.address} onChange={handleFormChange} required className="w-full border border-gray-300 rounded px-3 py-2" />
+                </div>
+
+                {/* Branch */}
+                <div>
+                  <label className="block text-sm font-medium">Branch*</label>
+                  <input type="text" name="branch" value={formData.branch} onChange={handleFormChange} required className="w-full border border-gray-300 rounded px-3 py-2" />
+                </div>
+
+                {/* Passing Out Year */}
+                <div>
+                  <label className="block text-sm font-medium">Passing Out Year*</label>
+                  <input type="number" name="passingYear" value={formData.passingYear} onChange={handleFormChange} required className="w-full border border-gray-300 rounded px-3 py-2" />
+                </div>
+
+                {/* 10th CGPA/Percentage */}
+                <div>
+                  <label className="block text-sm font-medium">10th CGPA / Percentage*</label>
+                  <input type="text" name="tenthScore" value={formData.tenthScore} onChange={handleFormChange} required className="w-full border border-gray-300 rounded px-3 py-2" />
+                </div>
+
+                {/* 12th/Diploma CGPA/Percentage */}
+                <div>
+                  <label className="block text-sm font-medium">12th / Diploma CGPA / Percentage*</label>
+                  <input type="text" name="twelfthScore" value={formData.twelfthScore} onChange={handleFormChange} required className="w-full border border-gray-300 rounded px-3 py-2" />
+                </div>
+
+                {/* Graduation CGPA/Percentage */}
+                <div>
+                  <label className="block text-sm font-medium">Graduation CGPA / Percentage*</label>
+                  <input type="text" name="graduationScore" value={formData.graduationScore} onChange={handleFormChange} required className="w-full border border-gray-300 rounded px-3 py-2" />
+                </div>
+
+                {/* PG CGPA/Percentage */}
+                <div>
+                  <label className="block text-sm font-medium">PG CGPA / Percentage</label>
+                  <input type="text" name="pgScore" value={formData.pgScore} onChange={handleFormChange} className="w-full border border-gray-300 rounded px-3 py-2" />
+                </div>
+
+                {/* Resume Upload */}
+                <div>
+                  <label className="block text-sm font-medium">Resume (PDF)*</label>
+                  <input type="file" accept=".pdf" onChange={handleResumeUpload} required className="w-full" />
+                </div>
+
+                {/* About Me */}
+                <div>
+                  <label className="block text-sm font-medium">About Me*</label>
+                  <textarea name="about" value={formData.about} onChange={handleFormChange} required className="w-full border border-gray-300 rounded px-3 py-2" />
+                </div>
+
+                <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded w-full">
+                  Submit Application
+                </button>
+              </form>
+
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );

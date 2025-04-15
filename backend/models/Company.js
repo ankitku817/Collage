@@ -1,9 +1,9 @@
 const mongoose = require("mongoose");
 
 const eligibilitySchema = new mongoose.Schema({
-    percentage: { type: Number, default: 60 },
-    passOutYear: { type: Number, default: 2025 },
-    branch: { type: String, default: "B.Tech CSE" }
+    percentage: { type: Number},
+    passOutYear: { type: Number},
+    branch: { type: String}
 }, { _id: false }); // Prevents generating an ID for this subdocument
 
 const roundSchema = new mongoose.Schema({

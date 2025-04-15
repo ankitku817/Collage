@@ -1,4 +1,5 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const fs = require("fs");
 const path = require("path");
 const bcrypt = require("bcryptjs");
@@ -7,17 +8,36 @@ const multer = require("multer");
 const Students = require("../models/Students");
 const verifyStudent = require("../middleware/verifyStudent");
 const Company = require("../models/Company");
-const OutgoingCompany = require("../models/OutgoingCompany.js");
+const Application =require( "../models/Application");
+const OutgoingCompany = require("../models/OutgoingCompany");
 const router = express.Router();
 const uploadDir = path.join(__dirname, "../uploads");
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
+// const storage = multer.diskStorage({
+//     destination: (req, file, cb) => cb(null, uploadDir),
+//     filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
+// });
+// const upload = multer({ storage });
+
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, uploadDir),
+    destination: (req, file, cb) => cb(null, "uploads/"),
     filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
 });
-const upload = multer({ storage });
+const upload = multer({
+    storage: storage,
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype === "application/pdf" || file.mimetype.startsWith("image/")) {
+            cb(null, true);
+        } else {
+            cb(new Error("Only images and PDF files are allowed!"), false);
+        }
+    }
+});
 
 router.put("/update-profile", verifyStudent, async (req, res) => {
     try {
@@ -131,6 +151,60 @@ router.get("/students", verifyStudent, async (req, res) => {
     } catch (error) {
         console.error("Error fetching students:", error);
         res.status(500).json({ message: "Server error!" });
+    }
+});
+
+router.post("/apply", verifyStudent, upload.single("resume"), async (req, res) => {
+    try {
+        const {
+            companyId,
+            name,
+            email,
+            phone,
+            univercityRollNo,
+            collegeRollNo,
+            dob,
+            banch,
+            passingYear,
+            tenthScore,
+            twelfthScore,
+            graduationScore,
+            pgScore,
+            about,
+        } = req.body;
+
+        const resumePath = req.file ? req.file.path : null;
+
+        if (!resumePath) {
+            return res.status(400).json({ message: "Resume file is required" });
+        }
+        const currentStudent = await Students.findById(req.studentId);
+
+        const newApplication = new Application({
+            studentId:currentStudent, 
+            companyId,
+            name,
+            email,
+            phone,
+            resume: resumePath,
+            univercityRollNo,
+            collegeRollNo,
+            dob,
+            banch,
+            passingYear,
+            tenthScore,
+            twelfthScore,
+            graduationScore,
+            pgScore,
+            about,
+        });
+
+        await newApplication.save();
+
+        return res.status(200).json({ message: "Application submitted successfully" });
+    } catch (error) {
+        console.error("Apply Error:", error);
+        return res.status(500).json({ message: "Server error while applying" });
     }
 });
 

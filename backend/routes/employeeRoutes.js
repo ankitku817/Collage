@@ -9,6 +9,7 @@ const Student = require("../models/Students");
 const Company = require("../models/Company");
 const OutgoingCompany = require("../models/OutgoingCompany.js");
 const multer = require("multer");
+const Application = require("../models/Application.js");
 const uploadDir = path.join(__dirname, "../uploads");
 const router = express.Router();
 
@@ -64,10 +65,19 @@ router.post("/employee-login", async (req, res) => {
     }
 });
 
+router.get("/student-applied", verifyEmployee, async (req, res) => {
+    try {
+        const students = await Student.find();
+        res.status(200).json(students);
+    } catch (error) {
+        console.error("Error fetching students:", error);
+        res.status(500).json({ message: "Server error!" });
+    }
+});
 
 router.get("/students", verifyEmployee, async (req, res) => {
     try {
-        const students = await Student.find(); 
+        const students = await Application.find(); 
         res.status(200).json(students);
     } catch (error) {
         console.error("Error fetching students:", error);

@@ -291,13 +291,13 @@ function Incoming_Company() {
           <table className="min-w-full border-collapse border border-gray-300">
             <thead className="bg-gray-200 text-sm sm:text-base">
               <tr>
-                <th className="border p-2">Name</th>
-                <th className="border p-2">Industry</th>
+                <th className="border p-10">Name</th>
+                <th className="border p-10">Industry</th>
                 <th className="border p-2">Contact</th>
-                <th className="border p-2">Arrival</th>
-                <th className="border p-2">Departure</th>
-                <th className="border p-2">Image</th>
-                <th className="border p-2">Job Description</th>
+                <th className="border p-8">Arrival</th>
+                <th className="border p-8">Departure</th>
+                <th className="border p-16">Image</th>
+                <th className="border p-0">Job Description</th>
                 <th className="border p-2">Actions</th>
               </tr>
             </thead>
@@ -318,7 +318,7 @@ function Incoming_Company() {
                       />
                     )}
                   </td>
-                  <td className="border p-2">{company.jobDescription}</td>
+                  <td className="border p-0">{company.jobDescription}</td>
                   <td className="border p-2 space-x-2">
                     <button
                       className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded"
