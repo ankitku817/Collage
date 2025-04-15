@@ -127,8 +127,6 @@ router.put("/students/update/:id", verifyAdmin, upload.single("profileImage"), a
     try {
         const { id } = req.params;
         let updateData = { ...req.body };
-
-        // 🚨 Ensure rollcode and password are not updated unless explicitly set
         delete updateData.rollcode;
         if (!updateData.password) {
             delete updateData.password;
@@ -156,7 +154,6 @@ router.put("/students/update/:id", verifyAdmin, upload.single("profileImage"), a
         res.status(500).json({ message: "Error updating student", error: error.message });
     }
 });
-
 router.get("/students", verifyAdmin, async (req, res) => {
     try {
         const students = await Students.find();
@@ -166,7 +163,6 @@ router.get("/students", verifyAdmin, async (req, res) => {
         res.status(500).json({ message: "Server error!" });
     }
 });
-
 router.get("/employees", verifyAdmin, async (req, res) => {
     try {
         const employees = await Employee.find();
@@ -299,10 +295,10 @@ router.post("/register-employee", verifyAdmin, async (req, res) => {
         if (existingEmployee) {
             return res.status(400).json({ message: "Employee with this Employee ID already exists!" });
         }
-        const hashedPassword = await bcrypt.hash(password, 10);
+        // const hashedPassword = await bcrypt.hash(password, 10);
         const newEmployee = new Employee({
             empId: String(empId),
-            password: hashedPassword,
+            password,
             mobileNo: String(mobileNo),
         });
         await newEmployee.save();
@@ -313,7 +309,6 @@ router.post("/register-employee", verifyAdmin, async (req, res) => {
         res.status(500).json({ message: "Server error!" });
     }
 });
-
 router.post("/employee-login", async (req, res) => {
     try {
         const { empId, password } = req.body;

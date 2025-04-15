@@ -111,6 +111,8 @@ function View_Students() {
                 <h2 className="text-2xl font-bold text-blue-800">📌 {student.name}</h2>
                 <p className="text-base font-bold text-blue-950"> {student.headline}</p>
                 <p className="text-gray-600"><strong>🎟️ Roll No:</strong> {student.rollcode}</p>
+                <p className="text-gray-600"><strong>📚 Semester:</strong> {student.semester}</p>
+                <p className="text-gray-600"><strong>🎓 Batch:</strong> {student.batchYear} - {student.passoutYear}</p>
                 <p className="text-gray-600"><strong>📖 Course:</strong> {student.course}</p>
                 <p className="text-gray-600"><strong>🏛️ Department:</strong> {student.department}</p>
                 <p className="text-gray-600"><strong>🏫 College:</strong> {student.collegeName}</p>

@@ -1,6 +1,7 @@
 
 import React, { useState } from "react";
 import axios from "axios";
+import View_Student from '../Placements/View_Students'
 import {
     FaUniversity,
     FaUserGraduate,
@@ -24,7 +25,18 @@ const HomePages = () => {
     const [loading, setLoading] = useState(false);
       const [error, setError] = useState("");
     const [message, setMessage] = useState("");
+      const [menuOpen, setMenuOpen] = useState(false);
     
+    const FeatureCard = ({ icon, title, description, buttonText, linkTo }) => (
+      <div className="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center hover:shadow-2xl transition transform hover:-translate-y-1">
+        {icon}
+        <h3 className="text-xl font-semibold mt-2">{title}</h3>
+        <p className="text-gray-600 text-center mt-2">{description}</p>
+        <Link to={linkTo} className="mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg">
+          {buttonText}
+        </Link>
+      </div>
+    );
     const handleChangePassword = async () => {
         if (!oldPassword || !newPassword || !confirmPassword) {
             setError("All fields are required.");
@@ -92,16 +104,51 @@ const HomePages = () => {
                 </div>
             </nav>
 
-            {/* Hero Section */}
-            <header className="bg-blue-500 text-white text-center py-20 px-4">
-                <h2 className="text-4xl font-extrabold">Find Your Dream Job</h2>
-                <p className="mt-4 text-lg">Explore top companies and apply for jobs that match your skills.</p>
-                <Link to="/jobs">
-                    <button className="mt-6 bg-white text-blue-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-200 transition">
-                        Explore Jobs
-                    </button>
-                </Link>
-            </header>
+            {/* Main Content */}
+                 <div className="container mx-auto px-6 py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                   <FeatureCard
+                     icon={<FaUserGraduate className="text-5xl text-green-600" />}
+                     title="View Students"
+                     description="Search students by course, branch, and section."
+                     buttonText="Search Students"
+                    linkTo="/student-homepage/students" // New page route
+                   />
+           
+                   <FeatureCard
+                     icon={<FaBriefcase className="text-5xl text-blue-600" />}
+                     title="Ongoing Recruitments"
+                     description="View all company recruitment lists with details."
+                     buttonText="View Details"
+                     linkTo="/placement-homepages/recruitments"
+                   />
+           
+                   <FeatureCard
+                     icon={<FaUniversity className="text-5xl text-indigo-600" />}
+                     title="Incoming Companies"
+                     description="Check which companies are coming for recruitment."
+                     buttonText="View Companies"
+                    linkTo="/student-homepage/incoming-companies"
+                   />
+           
+                   <FeatureCard
+                     icon={<FaUsers className="text-5xl text-purple-600" />}
+                     title="Outgoing Students"
+                     description="See students who are placed in top companies."
+                     buttonText="View List"
+                   />
+                   <FeatureCard
+                     icon={<FaChartBar className="text-5xl text-yellow-600" />}
+                     title="Statistics"
+                     description="Graphical representation of placements & job offers."
+                     buttonText="View Stats"
+                   />
+                   <FeatureCard
+                     icon={<FaBook className="text-5xl text-red-600" />}
+                     title="Placement Policy"
+                     description="Read the guidelines and policies for placement."
+                     buttonText="View Policy"
+                   />
+                 </div>
 
             {/* Featured Jobs */}
             <section className="py-12 px-6">

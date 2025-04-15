@@ -176,57 +176,28 @@ const StudentList = () => {
             reader.readAsDataURL(file);
         }
     };
+    const currentYear = new Date().getFullYear();
+    const minBatchYear = currentYear - 5;
 
-    // const handleUpdateStudent = async (e) => {
-    //     e.preventDefault();
-    //     const { password, ...updateData } = editStudent;
+    const [selectedBatchYear, setSelectedBatchYear] = useState(editStudent?.batchYear || "");
+    const [selectedPassoutYear, setSelectedPassoutYear] = useState(editStudent?.passoutYear || "");
 
-    //     if (editStudent.newPassword) {
-    //         updateData.password = editStudent.newPassword;
-    //     }
+    const handleBatchYearChange = (e) => {
+        const year = parseInt(e.target.value, 10);
+        setSelectedBatchYear(year);
+        setSelectedPassoutYear(""); // Reset passout year when batch year changes
+        handleInputChange({ target: { name: "batchYear", value: year } });
+    };
 
-    //     console.log("Updating Student:", updateData);
-
-    //     try {
-    //         const token = localStorage.getItem("token");
-    //         const response = await fetch(`http://localhost:5000/api/admin/students/update/${editStudent._id}`, {
-    //             method: "PUT",
-    //             headers: {
-    //                 "Content-Type": "application/json",
-    //                 Authorization: `Bearer ${token}`,
-    //             },
-    //             body: JSON.stringify(updateData), 
-    //         });
-
-    //         const data = await response.json();
-    //         console.log("API Response:", data);
-
-    //         if (response.ok) {
-    //             alert("Student updated successfully!");
-    //             setStudents((prevStudents) =>
-    //                 prevStudents.map((student) =>
-    //                     student._id === editStudent._id ? { ...student, ...data.student } : student
-    //                 )
-    //             );
-    //             setIsEditModalOpen(false);
-    //         } else {
-    //             alert(data.error || "Failed to update student.");
-    //         }
-    //     } catch (error) {
-    //         console.error("Error updating student:", error);
-    //         alert("Failed to update student.");
-    //     }
-    // };
+    const handlePassoutYearChange = (e) => {
+        const year = parseInt(e.target.value, 10);
+        setSelectedPassoutYear(year);
+        handleInputChange({ target: { name: "passoutYear", value: year } });
+    };
 
     const handleUpdateStudent = async (e) => {
         e.preventDefault();
         const { password, ...updateData } = editStudent;
-        const currentMonth = new Date().getMonth() + 1; 
-        if (editStudent.semester === 1 && currentMonth === 1) {
-            updateData.semester = 2; 
-        } else if (editStudent.semester === 2 && currentMonth === 8) {
-            updateData.semester = 3;
-        }
 
         if (editStudent.newPassword) {
             updateData.password = editStudent.newPassword;
@@ -242,7 +213,7 @@ const StudentList = () => {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify(updateData),
+                body: JSON.stringify(updateData), 
             });
 
             const data = await response.json();
@@ -264,6 +235,53 @@ const StudentList = () => {
             alert("Failed to update student.");
         }
     };
+
+    // const handleUpdateStudent = async (e) => {
+    //     e.preventDefault();
+    //     const { password, ...updateData } = editStudent;
+    //     const currentMonth = new Date().getMonth() + 1; 
+    //     if (editStudent.semester === 1 && currentMonth === 1) {
+    //         updateData.semester = 2; 
+    //     } else if (editStudent.semester === 2 && currentMonth === 8) {
+    //         updateData.semester = 3;
+    //     }
+
+    //     if (editStudent.newPassword) {
+    //         updateData.password = editStudent.newPassword;
+    //     }
+
+    //     console.log("Updating Student:", updateData);
+
+    //     try {
+    //         const token = localStorage.getItem("token");
+    //         const response = await fetch(`http://localhost:5000/api/admin/students/update/${editStudent._id}`, {
+    //             method: "PUT",
+    //             headers: {
+    //                 "Content-Type": "application/json",
+    //                 Authorization: `Bearer ${token}`,
+    //             },
+    //             body: JSON.stringify(updateData),
+    //         });
+
+    //         const data = await response.json();
+    //         console.log("API Response:", data);
+
+    //         if (response.ok) {
+    //             alert("Student updated successfully!");
+    //             setStudents((prevStudents) =>
+    //                 prevStudents.map((student) =>
+    //                     student._id === editStudent._id ? { ...student, ...data.student } : student
+    //                 )
+    //             );
+    //             setIsEditModalOpen(false);
+    //         } else {
+    //             alert(data.error || "Failed to update student.");
+    //         }
+    //     } catch (error) {
+    //         console.error("Error updating student:", error);
+    //         alert("Failed to update student.");
+    //     }
+    // };
 
 
     const handleInputChange = (e) => {
@@ -441,7 +459,7 @@ const StudentList = () => {
                                     <label className="font-medium text-gray-700">📆 Semester</label>
                                     <select
                                         name="semester"
-                                        value={updatedStudent.semester || ""}
+                                        value={editStudent.semester || ""}
                                         onChange={handleInputChange}
                                         className="border p-2 rounded-lg focus:ring-2 focus:ring-blue-400"
                                         required
@@ -455,19 +473,18 @@ const StudentList = () => {
                                     </select>
                                 </div>
 
-                                {/* Batch Year */}
                                 <div className="flex flex-col">
                                     <label className="font-medium text-gray-700">🎓 Batch Year</label>
                                     <select
                                         name="batchYear"
-                                        value={editStudent?.batchYear || ""}
-                                        onChange={handleInputChange}
+                                        value={selectedBatchYear || ""}
+                                        onChange={handleBatchYearChange}
                                         className="border p-2 rounded-lg focus:ring-2 focus:ring-blue-400"
                                         required
                                     >
                                         <option value="">Select Batch Year</option>
-                                        {[...Array(25)].map((_, i) => {
-                                            const year = 2000 + i;
+                                        {[...Array(6)].map((_, i) => {
+                                            const year = minBatchYear + i;
                                             return (
                                                 <option key={year} value={year}>
                                                     {year}
@@ -477,6 +494,31 @@ const StudentList = () => {
                                     </select>
                                 </div>
 
+                                {/* Passout Year Dropdown */}
+                                <div className="flex flex-col mt-4">
+                                    <label className="font-medium text-gray-700">🎓 Passout Year</label>
+                                    <select
+                                        name="passoutYear"
+                                        value={editStudent?.passoutYear || ""}
+                                        onChange={handleInputChange}
+                                        className="border p-2 rounded-lg focus:ring-2 focus:ring-blue-400"
+                                        required
+                                        disabled={!selectedBatchYear} // Disable if batch year is not selected
+                                    >
+                                        <option value="">Select Passout Year</option>
+                                        {selectedBatchYear &&
+                                            [...Array(5)].map((_, i) => {
+                                                const year = selectedBatchYear + i + 1;
+                                                return (
+                                                    <option key={year} value={year}>
+                                                        {year}
+                                                    </option>
+                                                );
+                                            })}
+                                    </select>
+                                </div>
+
+                                
                                 <div className="flex flex-col">
                                     <label className="font-medium text-gray-700">🚻 Gender</label>
                                     <select

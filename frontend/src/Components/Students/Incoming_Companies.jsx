@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-function Incoming_Company() {
+function Incoming_Companies() {
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -17,7 +17,7 @@ function Incoming_Company() {
     batch: "",
     jobDescription: "",
     rounds: [],
-    companyImage: null, 
+    companyImage: null,
     companyPdf: null,
   });
   useEffect(() => {
@@ -29,7 +29,7 @@ function Incoming_Company() {
         return;
       }
       try {
-        const response = await axios.get("http://localhost:5000/api/employee/companies", {
+        const response = await axios.get("http://localhost:5000/api/student/companies", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -69,11 +69,11 @@ function Incoming_Company() {
 
 
   const addCompany = async () => {
-    const token = localStorage.getItem("token"); 
+    const token = localStorage.getItem("token");
 
     if (!token) {
       console.error("❌ No token found. Please log in.");
-      return; 
+      return;
     }
 
     const formData = new FormData();
@@ -144,7 +144,7 @@ function Incoming_Company() {
       setError("Failed to delete company.");
     }
   };
-  
+
 
   if (loading) return <p className="text-center">Loading companies... 🕒</p>;
   if (error) return <p className="text-red-600 text-center">{error} ❌</p>;
@@ -153,133 +153,6 @@ function Incoming_Company() {
       <h1 className="text-2xl sm:text-3xl font-bold text-center text-blue-800 mb-6">
         🏢 Incoming & Outgoing Companies
       </h1>
-
-      {/* Form Section */}
-      <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-6">
-        <h2 className="text-lg sm:text-xl font-semibold text-gray-700 mb-4">
-          ➕ Add New Company
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-          {/* Repeatable Input Fields */}
-          {[
-            { label: "Company Name", name: "name", placeholder: "Enter company name" },
-            { label: "Industry", name: "industry", placeholder: "Enter industry" },
-            { label: "Contact", name: "contact", placeholder: "Enter contact info" },
-            { label: "Location", name: "location", placeholder: "Enter Placement Drive Location" },
-            { label: "Arrival Date", name: "arrivalDate", type: "date" },
-            { label: "Departure Date", name: "departureDate", type: "date" },
-            { label: "Eligibility", name: "eligibility", placeholder: "Eligibility criteria" },
-            { label: "Passout Year", name: "passoutYear", placeholder: "Passout year" },
-            { label: "Department", name: "batch", placeholder: "Batch (e.g. B.Tech CSE)" },
-          ].map(({ label, name, type = "text", placeholder }) => (
-            <label key={name} className="block">
-              <span className="text-gray-700">{label}</span>
-              <input
-                type={type}
-                name={name}
-                className="p-2 mt-1 border rounded w-full"
-                placeholder={placeholder}
-                value={newCompany[name]}
-                onChange={handleInputChange}
-              />
-            </label>
-          ))}
-
-          {/* Job Description */}
-          <label className="block">
-            <span className="text-gray-700">Job Description</span>
-            <textarea
-              name="jobDescription"
-              className="p-2 mt-1 border rounded w-full"
-              placeholder="Enter job description"
-              value={newCompany.jobDescription}
-              onChange={handleInputChange}
-            />
-          </label>
-
-          {/* File Inputs */}
-          <label className="block">
-            <span className="text-gray-700">Company Image</span>
-            <input
-              type="file"
-              name="companyImage"
-              className="p-2 mt-1 border rounded w-full"
-              onChange={handleFileChange}
-            />
-          </label>
-
-          <label className="block">
-            <span className="text-gray-700">Company PDF</span>
-            <input
-              type="file"
-              name="companyPdf"
-              accept="application/pdf"
-              className="p-2 mt-1 border rounded w-full"
-              onChange={handleFileChange}
-            />
-          </label>
-
-          {/* Rounds Section */}
-          <div className="col-span-1 md:col-span-2">
-            <h3 className="font-semibold mb-2">Rounds:</h3>
-            <select
-              className="p-2 border rounded w-full mb-4"
-              value={newCompany.rounds.length}
-              onChange={(e) => {
-                const roundCount = parseInt(e.target.value, 10);
-                setNewCompany((prev) => ({
-                  ...prev,
-                  rounds: Array.from({ length: roundCount }, () => ({
-                    roundName: "",
-                    description: "",
-                  })),
-                }));
-              }}
-            >
-              <option value="0">Select number of rounds</option>
-              {[1, 2, 3, 4].map((num) => (
-                <option key={num} value={num}>
-                  {num} Round{num > 1 ? "s" : ""}
-                </option>
-              ))}
-            </select>
-
-            {newCompany.rounds.map((round, index) => (
-              <div key={index} className="mb-2">
-                <input
-                  type="text"
-                  placeholder={`Round ${index + 1} Name`}
-                  className="p-2 border rounded w-full mb-2"
-                  value={round.roundName}
-                  onChange={(e) => {
-                    const updatedRounds = [...newCompany.rounds];
-                    updatedRounds[index].roundName = e.target.value;
-                    setNewCompany((prev) => ({ ...prev, rounds: updatedRounds }));
-                  }}
-                />
-                <textarea
-                  placeholder={`Round ${index + 1} Description`}
-                  className="p-2 border rounded w-full"
-                  value={round.description}
-                  onChange={(e) => {
-                    const updatedRounds = [...newCompany.rounds];
-                    updatedRounds[index].description = e.target.value;
-                    setNewCompany((prev) => ({ ...prev, rounds: updatedRounds }));
-                  }}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <button
-          className="bg-green-600 hover:bg-green-700 text-white py-2 px-6 rounded mt-6 w-full transition"
-          onClick={addCompany}
-        >
-          Add Company
-        </button>
-      </div>
 
       {/* Company List Section */}
       <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
@@ -385,7 +258,7 @@ function Incoming_Company() {
                   className="w-full h-40 object-contain mt-4"
                 />
               )}
-              
+
               {selectedCompany.companyPdf && (
                 <button
                   className="w-full h-40 object-contain mt-4"
@@ -404,4 +277,4 @@ function Incoming_Company() {
   );
 }
 
-export default Incoming_Company;
+export default Incoming_Companies;

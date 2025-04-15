@@ -76,7 +76,7 @@ const Placement_Home = () => {
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex space-x-6 text-lg">
-          <NavLink to="/placement-homepages" text="Home" />
+          <NavLink to="/placement-homepage" text="Home" />
           <NavLink to="/placement-homepages/jobs" text="Jobs" />
           <button
             className="hover:text-gray-200 transition"

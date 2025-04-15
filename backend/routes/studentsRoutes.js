@@ -6,6 +6,8 @@ const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const Students = require("../models/Students");
 const verifyStudent = require("../middleware/verifyStudent");
+const Company = require("../models/Company");
+const OutgoingCompany = require("../models/OutgoingCompany.js");
 const router = express.Router();
 const uploadDir = path.join(__dirname, "../uploads");
 if (!fs.existsSync(uploadDir)) {
@@ -65,20 +67,7 @@ router.post("/login-student", async (req, res) => {
         res.status(500).json({ message: "Server error!" });
     }
 });
-router.get("/students-profile", verifyStudent, async (req, res) => {
-    try {
-        const student = await Students.findById(req.studentId).select("-password"); 
 
-        if (!student) {
-            return res.status(404).json({ message: "Student not found!" });
-        }
-
-        res.status(200).json(student);
-    } catch (error) {
-        console.error("Profile fetch error:", error.message);
-        res.status(500).json({ message: "Server error!" });
-    }
-});
 router.post("/change-password", verifyStudent, async (req, res) => {
     try {
         const { oldPassword, newPassword, confirmPassword } = req.body;
@@ -106,6 +95,64 @@ router.post("/change-password", verifyStudent, async (req, res) => {
         res.status(200).json({ message: "Password changed successfully!" });
     } catch (error) {
         console.error("Change password error:", error);
+        res.status(500).json({ message: "Server error!" });
+    }
+});
+
+router.get("/students-profile", verifyStudent, async (req, res) => {
+    try {
+        const student = await Students.findById(req.studentId).select("-password");
+
+        if (!student) {
+            return res.status(404).json({ message: "Student not found!" });
+        }
+
+        res.status(200).json(student);
+    } catch (error) {
+        console.error("Profile fetch error:", error.message);
+        res.status(500).json({ message: "Server error!" });
+    }
+});
+router.get("/students", verifyStudent, async (req, res) => {
+    try {
+        // Get the logged-in student
+        const currentStudent = await Students.findById(req.studentId);
+
+        if (!currentStudent) {
+            return res.status(404).json({ message: "Student not found!" });
+        }
+        const students = await Students.find({
+            batchYear: currentStudent.batchYear,
+            department: currentStudent.department,
+            _id: { $ne: currentStudent._id }, 
+        }).select("-password");
+
+        res.status(200).json(students);
+    } catch (error) {
+        console.error("Error fetching students:", error);
+        res.status(500).json({ message: "Server error!" });
+    }
+});
+
+router.get("/companies", verifyStudent, async (req, res) => {
+    try {
+        const now = new Date();
+        const expiredCompanies = await Company.find({
+            $or: [
+                { arrivalDate: { $lt: now } },
+                { departureDate: { $lt: now } },
+            ],
+        });
+
+        for (let company of expiredCompanies) {
+            const outgoing = new OutgoingCompany(company.toObject());
+            await outgoing.save();
+            await Company.findByIdAndDelete(company._id);
+        }
+        const companies = await Company.find().sort({ arrivalDate: 1 });
+        res.status(200).json(companies);
+    } catch (error) {
+        console.error("Error fetching companies:", error);
         res.status(500).json({ message: "Server error!" });
     }
 });

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { FaUser, FaPhone, FaEnvelope, FaUniversity, FaBirthdayCake, FaMapMarkerAlt, FaCodeBranch, FaBook } from "react-icons/fa";
+import { FaUser, FaPhone, FaEnvelope, FaUniversity, FaBirthdayCake, FaMapMarkerAlt, FaCodeBranch, FaBook, FaCalendarAlt, FaGraduationCap } from "react-icons/fa";
 
 const SProfile = () => {
     const [student, setStudent] = useState(null);
@@ -473,6 +473,9 @@ return (
                     alt="Profile"
                     className="rounded-full border-4 border-blue-500 w-32 h-32"
                 />
+        </div> 
+        <div className=" flex items-center justify-center mb-6">
+        <p className="text-base font-bold text-blue-950 ">{student?.headline}</p>
             </div>
 
             <div className="grid grid-cols-2 gap-8 text-lg">
@@ -505,7 +508,19 @@ return (
                 <div className="flex items-center">
                     <FaBook className="text-yellow-500 mr-4" />
                     <p><strong>College Roll No:</strong> {student?.collageRollNo}</p>
-                </div>
+            </div>
+            
+            <div className="flex items-center">
+                <FaCalendarAlt className="text-yellow-500 mr-4" />
+                <p><strong>Semester:</strong> {student?.semester}</p>
+            </div>
+
+            <div className="flex items-center">
+                <FaGraduationCap className="text-yellow-500 mr-4" />
+                <p><strong>Batch:</strong> {student?.batchYear} - {student.passoutYear }</p>
+            </div>
+
+
 
                 <div className="flex items-center">
                     <FaBirthdayCake className="text-pink-500 mr-4" />

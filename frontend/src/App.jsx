@@ -12,6 +12,8 @@ import Placement_Home from "./Components/Placements/Placement_Home";
 import Profile from "./Components/Collage/Profile";
 import SProfile from "./Components/Students/SProfile";
 import View_Students from "./Components/Placements/View_Students";
+import View_Student from "./Components/Students/View-Students";
+import Incoming_Companies from "./Components/Students/Incoming_Companies";
 import Incoming_Company from "./Components/Placements/Incoming_Company";
 import StudentList from "./Components/Collage/StudentList";
 import EmployeeList from "./Components/Collage/EmployeeList";
@@ -36,6 +38,8 @@ function App() {
           <Route path="/placement-homepages/companies" element={<Incoming_Company />} />
           <Route path="/collage-homepage/profile" element={<Profile />} />
           <Route path="/student-homepage/profile" element={<SProfile />} />
+          <Route path="/student-homepage/students" element={<View_Student />} />
+          <Route path="/student-homepage/incoming-companies" element={<Incoming_Companies />} />
           <Route path="/collage-homepage/students" element={<StudentList />} />
           <Route path="/collage-homepage/employees" element={<EmployeeList />} />
 
