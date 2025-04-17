@@ -67,7 +67,7 @@ router.post("/employee-login", async (req, res) => {
 
 router.get("/student-applied", verifyEmployee, async (req, res) => {
     try {
-        const students = await Student.find();
+        const students = await company.find();
         res.status(200).json(students);
     } catch (error) {
         console.error("Error fetching students:", error);

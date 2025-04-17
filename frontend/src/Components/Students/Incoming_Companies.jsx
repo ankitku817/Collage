@@ -7,7 +7,8 @@ function Incoming_Companies() {
   const [showForm, setShowForm] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [resumeFile, setResumeFile] = useState(null);
-  const [apply, setApply] = useState(false);
+  const [appliedCompanies, setAppliedCompanies] = useState(new Set());
+
   
   const [formData, setFormData] = useState({
     name: "",
@@ -101,18 +102,48 @@ function Incoming_Companies() {
       return;
     }
 
+    // ✅ Check if already applied before submitting
+    try {
+      const checkResponse = await axios.get(
+        `http://localhost:5000/api/student/check-application`,
+        {
+          params: {
+            companyId: selectedCompany._id,
+            universityRollNo: formData.universityRollNo,
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (checkResponse.data.alreadyApplied) {
+        alert("⚠️ You have already applied for this company.");
+        return;
+      }
+    } catch (checkErr) {
+      console.error("Error checking application status:", checkErr);
+      alert("Error verifying your application status. Please try again.");
+      return;
+    }
+
+    // ✅ Eligibility check
     const eligibility = selectedCompany.eligibilityCriteria;
     const isBranchValid = eligibility.branch === formData.branch;
-    const isPassingYearValid = parseInt(formData.passingYear) === parseInt(eligibility.passOutYear);
-    const isPercentageValid = parseFloat(formData.graduationScore) >= parseFloat(eligibility.percentage);
+    const isPassingYearValid =
+      parseInt(formData.passingYear) === parseInt(eligibility.passOutYear);
+    const isPercentageValid =
+      parseFloat(formData.graduationScore) >= parseFloat(eligibility.percentage);
 
     if (!isBranchValid || !isPassingYearValid || !isPercentageValid) {
       let errorMsg = "You are not eligible to apply due to the following reasons:\n";
-      if (!isBranchValid) errorMsg += "- Your branch does not match the required branch.\n";
-      if (!isPassingYearValid) errorMsg += "- Your passing year does not match the required year.\n";
-      if (!isPercentageValid) errorMsg += `- Your graduation percentage (${formData.graduationScore}%) is less than the required ${eligibility.percentage}%.\n`;
+      if (!isBranchValid)
+        errorMsg += "- Your branch does not match the required branch.\n";
+      if (!isPassingYearValid)
+        errorMsg += "- Your passing year does not match the required year.\n";
+      if (!isPercentageValid)
+        errorMsg += `- Your graduation percentage (${formData.graduationScore}%) is less than the required ${eligibility.percentage}%.\n`;
       alert(errorMsg);
-      
       return;
     }
 
@@ -122,10 +153,10 @@ function Incoming_Companies() {
     data.append("email", formData.email);
     data.append("phone", formData.phone);
     data.append("resume", resumeFile);
-    data.append("universityRollNo",formData.universityRollNo);
+    data.append("universityRollNo", formData.universityRollNo);
     data.append("collegeRollNo", formData.collegeRollNo);
     data.append("dob", formData.dob);
-    data.append("banch", formData.branch);
+    data.append("branch", formData.branch);
     data.append("passingYear", formData.passingYear);
     data.append("tenthScore", formData.tenthScore);
     data.append("twelfthScore", formData.twelfthScore);
@@ -134,24 +165,24 @@ function Incoming_Companies() {
     data.append("about", formData.about);
 
     try {
-      const res = await axios.post("http://localhost:5000/api/student/apply", data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      alert("Application submitted!");
-      setApply(true)
+      const res = await axios.post(
+        "http://localhost:5000/api/student/apply",
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      alert("✅ Application submitted!");
+      setAppliedCompanies((prev) => new Set(prev).add(selectedCompany._id));
       setShowForm(false);
     } catch (err) {
       console.error(err);
-      alert("Failed to apply");
+      alert("❌ Failed to apply");
     }
   };
-
-
-
-
   if (loading) return <p className="text-center">Loading companies... 🕒</p>;
   if (error) return <p className="text-red-600 text-center">{error} ❌</p>;
   
@@ -206,19 +237,22 @@ function Incoming_Companies() {
                     >
                       View
                     </button>
-                    if({<button
-                      className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded"
-                      onClick={() => handleApply(company)}
-                      
-                    >
-                      Apply
-                    </button>}):{
+
+                    {appliedCompanies.has(company._id) ? (
+                      <button
+                        className="bg-gray-500 text-white px-2 py-1 rounded cursor-not-allowed"
+                        disabled
+                      >
+                        Applied
+                      </button>
+                    ) : (
                       <button
                         className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded"
-
-                      >Applied
-                        </button>
-                    }
+                        onClick={() => handleApply(company)}
+                      >
+                        Apply
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
