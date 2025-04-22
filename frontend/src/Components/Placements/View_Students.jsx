@@ -20,6 +20,7 @@ function View_Students() {
           headers: { Authorization: `Bearer ${token}` },
         });
         setStudents(response.data);
+        console.log(response.data);
         setFilteredStudents(response.data);
       } catch (error) {
         setError("Failed to fetch students.");
@@ -72,7 +73,6 @@ function View_Students() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
-
         <select
           className="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 w-full md:w-1/4 shadow-sm"
           value={selectedCourse}
@@ -103,13 +103,13 @@ function View_Students() {
           {filteredStudents.map((student, index) => (
             <div key={student._id || index} className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center space-x-6 border border-gray-200">
               <img
-                src={student.profileImage || "https://via.placeholder.com/100"} // Placeholder if no image
+                src={student.profileImage || "https://via.placeholder.com/100"}
                 alt="Profile"
                 className="w-24 h-24 rounded-full shadow-md object-cover border-4 border-blue-400"
               />
               <div className="flex-1">
                 <h2 className="text-2xl font-bold text-blue-800">📌 {student.name}</h2>
-                <p className="text-base font-bold text-blue-950"> {student.headline}</p>
+                <p className="text-base font-bold text-blue-950">{student.headline}</p>
                 <p className="text-gray-600"><strong>🎟️ Roll No:</strong> {student.rollcode}</p>
                 <p className="text-gray-600"><strong>📚 Semester:</strong> {student.semester}</p>
                 <p className="text-gray-600"><strong>🎓 Batch:</strong> {student.batchYear} - {student.passoutYear}</p>
@@ -122,7 +122,7 @@ function View_Students() {
                 <p className="text-gray-600"><strong>📍 City:</strong> {student.city}, {student.state}, {student.country}</p>
                 <p className="text-gray-600"><strong>🧑 Gender:</strong> {student.Gender}</p>
                 <p className="text-gray-600"><strong>👨‍👩‍👧 Father:</strong> {student.fathersname}</p>
-                <p className="text-gray-600"><strong>💡 Skills:</strong> {student.skills.join(", ")}</p>
+                <p className="text-gray-600"><strong>💡 Skills:</strong> {Array.isArray(student.skills) ? student.skills.join(", ") : "No skills available"}</p>
               </div>
             </div>
           ))}

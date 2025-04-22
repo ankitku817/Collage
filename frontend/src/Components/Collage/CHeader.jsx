@@ -208,7 +208,7 @@ const CHeader = () => {
   return (
     <div className="bg-gray-100">
       <div
-        className={`fixed top-0 left-0 h-full w-64 mt-32 bg-gray-300 shadow-lg transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        className={`fixed top-0 left-0 h-full w-72 mt-32 bg-gray-300 shadow-lg transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
           } transition-transform duration-300 z-50`}
       >
         <div className="p-4 border-b flex justify-between items-center">
@@ -226,13 +226,13 @@ const CHeader = () => {
           <hr/>
           <Link to="/collage-homepage/students">
             <li className="flex items-center gap-5 cursor-pointer text-xl hover:text-blue-600">
-              <FaUsers className="text-blue-600" /> Students
+              <FaUsers className="text-blue-600" /> Registered Students
             </li>
           </Link>
           <hr />
           <Link to="/collage-homepage/employees">
             <li className="flex items-center gap-5 cursor-pointer text-xl hover:text-blue-600">
-              <FaBriefcase className="text-blue-600" /> Employees
+              <FaBriefcase className="text-blue-600" />  Placement Admin
             </li>
           </Link>
           <hr />
@@ -271,7 +271,7 @@ const CHeader = () => {
               Register Students
             </button>
             <button className="hover:text-gray-200 transition" onClick={()=> setIsPlacementRegisterOpen(true)}>
-              Register Employees
+              Placement Admin
             </button>
             <button className="hover:text-gray-200 transition" onClick={() => setIsChangePasswordOpen(true)}>
               Change Password
@@ -293,7 +293,7 @@ const CHeader = () => {
                   Register Students
                 </button>
                 <button className="block w-full text-left px-4 py-2 hover:bg-blue-100">
-                  Register Employees
+                  Placement Admin
                 </button>
                 <button className="block w-full text-left px-4 py-2 hover:bg-blue-100">
                   Change Password

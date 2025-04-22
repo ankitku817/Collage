@@ -163,6 +163,7 @@ router.get("/students", verifyAdmin, async (req, res) => {
         res.status(500).json({ message: "Server error!" });
     }
 });
+
 router.get("/employees", verifyAdmin, async (req, res) => {
     try {
         const employees = await Employee.find();
@@ -172,6 +173,7 @@ router.get("/employees", verifyAdmin, async (req, res) => {
         res.status(500).json({ message: "Server error!" });
     }
 });
+
 router.post("/login", async (req, res) => {
     try {
         const { uniqueCode, password } = req.body;
@@ -339,6 +341,63 @@ router.post("/employee-login", async (req, res) => {
     } catch (error) {
         console.error("Employee login error:", error);
         res.status(500).json({ message: "Server error!" });
+    }
+});
+
+router.put("/employees/:id", verifyAdmin, async (req, res) => {
+    try {
+        const { name, fatherName, course, experience, dob, mobile } = req.body;
+
+        if (mobile && !/^\d{10}$/.test(mobile)) {
+            return res.status(400).json({ message: "Invalid mobile number! Must be exactly 10 digits." });
+        }
+
+        const updatedEmployee = await Employee.findByIdAndUpdate(
+            req.params.id,
+            {
+                ...(name && { name }),
+                ...(fatherName && { fatherName }),
+                ...(course && { course }),
+                ...(experience && { experience }),
+                ...(dob && { dob }),
+                ...(mobile && { mobile }),
+            },
+            { new: true }
+        );
+
+        if (!updatedEmployee) {
+            return res.status(404).json({ message: "Employee not found!" });
+        }
+
+        res.status(200).json({ message: "Employee updated successfully!", employee: updatedEmployee });
+    } catch (error) {
+        console.error("Update error:", error);
+        res.status(500).json({ message: "Server error!" });
+    }
+});
+router.delete("/employees/:id", verifyAdmin, async (req, res) => {
+    try {
+        const deletedEmployee = await Employee.findByIdAndDelete(req.params.id);
+        if (!deletedEmployee) {
+            return res.status(404).json({ message: "Employee not found!" });
+        }
+
+        res.status(200).json({ message: "Employee deleted successfully!" });
+    } catch (error) {
+        console.error("Delete error:", error);
+        res.status(500).json({ message: "Server error!" });
+    }
+});
+router.put("/employees/:id/profile-image", verifyAdmin, upload.single("profileImage"), async (req, res) => {
+    try {
+        const employee = await Employee.findByIdAndUpdate(
+            req.params.id,
+            { profileImage: req.file.filename },
+            { new: true }
+        );
+        res.json({ message: "Profile image updated!", employee });
+    } catch (err) {
+        res.status(500).json({ message: "Failed to upload image." });
     }
 });
 

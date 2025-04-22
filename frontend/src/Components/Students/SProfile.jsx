@@ -13,9 +13,11 @@ const SProfile = () => {
         workExperience: "",
         currentCompany: "",
         skills: [],
+        placement: 'yes',
     });
     const [filteredHeadlines, setFilteredHeadlines] = useState([]);
     const [isCustomHeadline, setIsCustomHeadline] = useState(false);
+    
 
     const headlineOptions = [
         "Software Development: Full Stack Developer",
@@ -340,6 +342,7 @@ const SProfile = () => {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setStudent(response.data);
+                console.log(response.data);
             } catch (err) {
                 setError("Failed to fetch student profile.");
             } finally {
@@ -352,15 +355,17 @@ const SProfile = () => {
 
     if (loading) return <p className="text-center text-lg font-semibold">Loading...</p>;
     if (error) return <p className="text-center text-red-500">{error}</p>;
-
     const handleOpenModal = () => {
         setProfileData({
             headline: student?.headline || "",
             workExperience: student?.workExperience || "",
             currentCompany: student?.currentCompany || "",
+            placement: student?.placement || "yes",
+            skills: student?.skills || [], 
         });
         setIsModalOpen(true);
     };
+
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
@@ -424,6 +429,7 @@ const SProfile = () => {
             }
         }     
     };
+
     const handleSaveProfile = async () => {
         setError("");
         setSuccessMessage("");
@@ -457,12 +463,13 @@ const SProfile = () => {
             }
 
             setSuccessMessage("Profile updated successfully!");
-            setStudent(data.student); // Correct way to access the response
+            setStudent(data.student);
             setIsModalOpen(false);
         } catch (err) {
             setError(err.message || "Failed to update profile.");
         }
     };
+    
 return (
         <div className="max-w-4xl mx-auto p-8 bg-white shadow-lg rounded-lg border border-gray-300">
             <h2 className="text-3xl font-bold text-center mb-8 text-blue-600">🎓 Your Profile</h2>
@@ -592,13 +599,41 @@ return (
                                 </div>
                             )}
 
+                    </div>
+                    <div className="mb-6">
+                        <label className="block text-sm font-semibold mb-2">Do you want placement?</label>
+                        <div className="flex space-x-6">
+                            <label className="flex items-center">
+                                <input
+                                    type="radio"
+                                    name="placement"
+                                    value="yes"
+                                    checked={profileData.placement === 'yes'}
+                                    onChange={() => setProfileData({ ...profileData, placement: 'yes' })}
+                                    className="mr-2"
+                                />
+                                Yes
+                            </label>
+                            <label className="flex items-center">
+                                <input
+                                    type="radio"
+                                    name="placement"
+                                    value="no"
+                                    checked={profileData.placement === 'no'}
+                                    onChange={() => setProfileData({ ...profileData, placement: 'no' })}
+                                    className="mr-2"
+                                />
+                                No
+                            </label>
                         </div>
+                    </div>
+
                         <div className="mb-6 relative">
                             <label htmlFor="skills" className="block text-sm font-semibold mb-2">Skills</label>
                             <input
                                 type="text"
                                 id="skills"
-                                value={skillInput}
+                                value={profileData.skills}
                                 onChange={handleSkillInputChange}
                                 className="w-full p-3 border-2 border-gray-300 rounded-md shadow-md focus:outline-none focus:border-blue-500"
                                 placeholder="Type your skills"

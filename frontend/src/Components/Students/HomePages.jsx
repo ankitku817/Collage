@@ -91,12 +91,12 @@ const HomePages = () => {
     
     return (
         <div className="bg-gray-100 min-h-screen">
-            {/* Navbar */}
             <nav className="bg-blue-600 text-white py-4 px-6 flex justify-between items-center shadow-md">
                 <h1 className="text-2xl font-bold">College Placement</h1>
                 <div className="space-x-6">
                     <Link to="/student-homepage" className="hover:underline">Home</Link>
-                    <Link to="/student-homepage/jobs" className="hover:underline">Jobs</Link>
+                    <Link to="/student-homepage/results" className="hover:underline">Results</Link>
+                    <Link to="/student-homepage/applied-comapnies" className="hover:underline">Applied</Link>
                     <button className="hover:text-gray-200 transition" onClick={() => setIsChangePasswordOpen(true)}>
                         Change Password
                     </button>
@@ -242,6 +242,7 @@ const HomePages = () => {
         
     );
 };
+
 const JobCard = ({ title, company, location }) => {
     return (
         <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition">

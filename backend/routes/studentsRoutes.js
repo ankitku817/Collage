@@ -39,25 +39,61 @@ const upload = multer({
     }
 });
 
+// router.put("/update-profile", verifyStudent, async (req, res) => {
+//     try {
+//         const { skills, headline,placement } = req.body;
+
+//         const student = await Students.findById(req.studentId);
+//         if (!student) {
+//             return res.status(404).json({ message: "Student not found!" });
+//         }
+//         student.skills = skills;
+//         student.headline = headline || "";
+//         student.placement=placement || "yes"
+
+//         await student.save();
+
+//         res.status(200).json({ message: "Profile updated successfully!", student });
+//     } catch (error) {
+//         console.error("Profile update error:", error.message);
+//         res.status(500).json({ message: "Server error!" });
+//     }
+// });
 router.put("/update-profile", verifyStudent, async (req, res) => {
     try {
-        const { skills, headline } = req.body;
+        const { skills, headline, placement } = req.body;
 
         const student = await Students.findById(req.studentId);
         if (!student) {
             return res.status(404).json({ message: "Student not found!" });
         }
-        student.skills = skills;
-        student.headline = headline || "";
+
+        // Optional: validate skills
+        if (skills && !Array.isArray(skills)) {
+            return res.status(400).json({ message: "Skills must be an array" });
+        }
+
+        student.skills = skills ?? student.skills;
+        student.headline = headline ?? student.headline;
+        student.placement = placement ?? "yes";
 
         await student.save();
 
-        res.status(200).json({ message: "Profile updated successfully!", student });
+        res.status(200).json({
+            message: "Profile updated successfully!",
+            student: {
+                id: student._id,
+                skills: student.skills,
+                headline: student.headline,
+                placement: student.placement
+            }
+        });
     } catch (error) {
         console.error("Profile update error:", error.message);
         res.status(500).json({ message: "Server error!" });
     }
 });
+
 router.post("/login-student", async (req, res) => {
     try {
         const { rollcode, password } = req.body;
@@ -135,7 +171,6 @@ router.get("/students-profile", verifyStudent, async (req, res) => {
 });
 router.get("/students", verifyStudent, async (req, res) => {
     try {
-        // Get the logged-in student
         const currentStudent = await Students.findById(req.studentId);
 
         if (!currentStudent) {
@@ -161,10 +196,11 @@ router.post("/apply", verifyStudent, upload.single("resume"), async (req, res) =
             name,
             email,
             phone,
-            univercityRollNo,
+            universityRollNo,
             collegeRollNo,
             dob,
-            banch,
+            course,
+            branch,
             passingYear,
             tenthScore,
             twelfthScore,
@@ -187,10 +223,11 @@ router.post("/apply", verifyStudent, upload.single("resume"), async (req, res) =
             email,
             phone,
             resume: resumePath,
-            univercityRollNo,
+            universityRollNo,
             collegeRollNo,
             dob,
-            banch,
+            branch,
+            course,
             passingYear,
             tenthScore,
             twelfthScore,
@@ -230,7 +267,37 @@ router.get("/companies", verifyStudent, async (req, res) => {
         res.status(500).json({ message: "Server error!" });
     }
 });
+router.get("/companies/outgoing", verifyStudent, async (req, res) => {
+    try {
+        const outgoingCompanies = await OutgoingCompany.find().sort({ departureDate: -1 });
+        res.status(200).json(outgoingCompanies);
+    } catch (error) {
+        console.error("Error fetching outgoing companies:", error);
+        res.status(500).json({ message: "Server error!" });
+    }
+});
 
+router.get('/check-application', verifyStudent, async (req, res) => {
+    const { companyId, collegeRollNo } = req.query;
 
+    const existing = await Application.findOne({
+        companyId,
+        collegeRollNo,
+    });
 
+    res.json({ alreadyApplied: !!existing });
+});
+
+router.get('/applied-comapnies', verifyStudent, async (req, res) => {
+    try {
+        const applications = await Application.find({ studentId: req.studentId })
+            .populate('companyId');
+        const appliedCompanies = applications.map(app => app.companyId);
+
+        res.status(200).json(appliedCompanies);
+    } catch (error) {
+        console.error("Error fetching applied companies:", error);
+        res.status(500).json({ message: "Server error while fetching applied companies" });
+    }
+});
 module.exports = router;

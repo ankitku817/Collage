@@ -24,6 +24,7 @@ const StudentSchema = new mongoose.Schema(
         passoutYear:{type:String},
         skills: { type: [String] },
         city: { type: String },
+        placement: { type: String, enum: ["yes", "no"], default: "yes" },
         profileImage: { type: String, default: "/uploads/default.png" },
     },
     { timestamps: true }

@@ -57,7 +57,7 @@ function View_Student() {
                 <p className="text-gray-600"><strong>📍 City:</strong> {student.city}, {student.state}, {student.country}</p>
                 <p className="text-gray-600"><strong>🧑 Gender:</strong> {student.Gender}</p>
                 <p className="text-gray-600"><strong>👨‍👩‍👧 Father:</strong> {student.fathersname}</p>
-                <p className="text-gray-600"><strong>💡 Skills:</strong> {student.skills.join(", ")}</p>
+                <p className="text-gray-600"><strong>💡 Skills:</strong> {Array.isArray(student.skills) ? student.skills.join(", ") : "No skills available"}</p>
               </div>
             </div>
           ))}

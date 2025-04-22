@@ -77,7 +77,8 @@ const Placement_Home = () => {
         {/* Desktop Navigation */}
         <div className="hidden md:flex space-x-6 text-lg">
           <NavLink to="/placement-homepage" text="Home" />
-          <NavLink to="/placement-homepages/jobs" text="Jobs" />
+          <NavLink to="/placement-homepages/results" text="Results" />
+          <NavLink to="/placement-homepages/applied-students" text="Applied Students" />
           <button
             className="hover:text-gray-200 transition"
             onClick={() => setIsChangePasswordOpen(true)}

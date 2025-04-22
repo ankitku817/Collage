@@ -77,7 +77,7 @@ router.get("/student-applied", verifyEmployee, async (req, res) => {
 
 router.get("/students", verifyEmployee, async (req, res) => {
     try {
-        const students = await Application.find(); 
+        const students = await Student.find();
         res.status(200).json(students);
     } catch (error) {
         console.error("Error fetching students:", error);
@@ -118,6 +118,32 @@ router.get("/companies/outgoing", verifyEmployee, async (req, res) => {
     }
 });
 
+router.get("/allcompanies", verifyEmployee, async (req, res) => {
+    try {
+        const activeCompanies = await Company.find().sort({ arrivalDate: 1 });
+        const outgoingCompanies = await OutgoingCompany.find().sort({ departureDate: -1 });
+
+        res.status(200).json({
+            active: activeCompanies,
+            outgoing: outgoingCompanies,
+        });
+    } catch (error) {
+        console.error("Error fetching all companies:", error);
+        res.status(500).json({ message: "Server error!" });
+    }
+});
+
+
+router.get("/employees", verifyEmployee, async (req, res) => {
+    try {
+        const employee = await Employee.findById(req.employeeId).select("-password");
+        if (!employee) return res.status(404).json({ message: "User not found!" });
+        res.status(200).json(employee); // returns an object
+    } catch (error) {
+        console.error("Profile fetch error:", error.message);
+        res.status(500).json({ message: "Server error!" });
+    }
+});
 
 
 router.post(
@@ -177,42 +203,6 @@ router.post(
     }
 );
 
-
-// router.post("/companies", verifyEmployee, upload.single("companyImage"), async (req, res) => {
-//     try {
-//         const { name, industry, contact, arrivalDate, departureDate, jobDescription, eligibilityCriteria, rounds } = req.body;
-//         const companyImage = req.file ? req.file.path : null;
-
-//         if (!name || !industry || !contact || !arrivalDate || !departureDate || !jobDescription || !companyImage || !rounds) {
-//             return res.status(400).json({ message: "All fields are required!" });
-//         }
-//         const parsedRounds = JSON.parse(rounds);
-//         const parsedEligibility = eligibilityCriteria ? JSON.parse(eligibilityCriteria) : {
-//             percentage: 60,
-//             passOutYear: 2025,
-//             branch: "B.Tech CSE"
-//         };
-//         const newCompany = new Company({
-//             name,
-//             industry,
-//             contact,
-//             arrivalDate,
-//             departureDate,
-//             jobDescription,
-//             eligibilityCriteria: parsedEligibility,
-//             rounds: parsedRounds,
-//             companyImage
-//         });
-
-//         await newCompany.save();
-//         res.status(201).json(newCompany);
-
-//     } catch (error) {
-//         console.error("Error adding company:", error);
-//         res.status(500).json({ message: "Server error!" });
-//     }
-// });
-
 router.delete("/companies/:id", verifyEmployee, async (req, res) => {
     try {
         const { id } = req.params;
@@ -223,4 +213,88 @@ router.delete("/companies/:id", verifyEmployee, async (req, res) => {
         res.status(500).json({ message: "Server error!" });
     }
 });
+
+router.put("/employees", verifyEmployee, async (req, res) => {
+    try {
+        const employeeId = req.employeeId;
+
+        const {
+            email,
+            department,
+            designation,
+            officeLocation,
+            joiningDate,
+            status,
+            bio,
+            socialLinks,
+            permissions,
+            lastLogin,
+            notifications,
+            alternateEmail,
+        } = req.body;
+
+        const updateData = {};
+
+        if (email) updateData.email = email;
+        if (department) updateData.department = department;
+        if (designation) updateData.designation = designation;
+        if (officeLocation) updateData.officeLocation = officeLocation;
+        if (joiningDate) updateData.joiningDate = joiningDate;
+        if (status) updateData.status = status;
+        if (bio) updateData.bio = bio;
+        if (socialLinks) updateData.socialLinks = socialLinks;
+        if (permissions) updateData.permissions = permissions;
+        if (lastLogin) updateData.lastLogin = lastLogin;
+        if (notifications !== undefined) updateData.notifications = notifications;
+        if (alternateEmail) updateData.alternateEmail = alternateEmail;
+
+        console.log("Updating with:", updateData); // 👈 Debug log
+
+        const updatedEmployee = await Employee.findByIdAndUpdate(
+            employeeId,
+            { $set: updateData },
+            {
+                new: true,
+                runValidators: true,
+                select: "-password", // Make sure password exists to exclude
+            }
+        );
+
+        if (!updatedEmployee) {
+            return res.status(404).json({ message: "Employee not found" });
+        }
+
+        return res.status(200).json(updatedEmployee);
+    } catch (error) {
+        console.error("Profile update error:", error.message);
+        return res.status(500).json({ message: "Failed to update profile" });
+    }
+});
+
+router.get("/recruitments", verifyEmployee, async (req, res) => {
+    try {
+        const recruitments = await Company.find({ status: "ongoing" }).sort({ arrivalDate: 1 });
+        if (!recruitments || recruitments.length === 0) {
+            return res.status(404).json({ message: "No ongoing recruitments found!" });
+        }
+        res.status(200).json(recruitments);
+    } catch (error) {
+        console.error("Error fetching ongoing recruitments:", error);
+        res.status(500).json({ message: "Server error!" });
+    }
+});
+
+router.get("/student-applied/:recruitmentId", verifyEmployee, async (req, res) => {
+    try {
+        const { recruitmentId } = req.params;
+        const applications = await Application.find({ recruitmentId });
+        const studentIds = applications.map(application => application.studentId);
+        const students = await Student.find({ _id: { $in: studentIds } });
+        res.status(200).json(students);
+    } catch (error) {
+        console.error("Error fetching students who applied:", error);
+        res.status(500).json({ message: "Server error!" });
+    }
+});
+
 module.exports = router;

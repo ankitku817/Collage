@@ -5,6 +5,42 @@ function Incoming_Company() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedCompany, setSelectedCompany] = useState(null);
+  const [successMessage, setSuccessMessage] = useState("");
+  const courseDepartments = {
+    "B.Tech": ["CSE", "ME", "EE", "CE", "ECE", "IT"],
+    "M.Tech": ["CSE", "ME", "EE", "CE", "ECE", "IT"],
+    "B.Com": ["Accounting", "Finance", "Taxation"],
+    "M.Com": ["Accounting", "Finance", "Business Studies"],
+    "B.Sc": ["Physics", "Chemistry", "Mathematics", "Biology"],
+    "M.Sc": ["Physics", "Chemistry", "Mathematics", "Biology"],
+    "BBA": ["Marketing", "Finance", "Human Resources"],
+    "MBA": ["Marketing", "Finance", "HR", "Operations Management"],
+    "BCA": ["Software Development", "Data Analytics"],
+    "MCA": ["Software Engineering", "Data Science"],
+    "BA": ["English", "History", "Political Science"],
+    "MA": ["English", "History", "Political Science"],
+    "Hotel Management": ["Hospitality Management", "Food Production"],
+    "PGDM": ["Business Analytics", "Marketing", "Finance"],
+  };
+  const initialCompanyState = {
+    name: "",
+    industry: "",
+    contact: "",
+    location: "",
+    arrivalDate: "",
+    departureDate: "",
+    jobDescription: "",
+    course: "",
+    branch: "",
+    passOutYear: "",
+    percentage: "",
+    rounds: [],
+    companyImage: null,
+    companyPdf: null,
+  };
+
+  const [newCompanys, setNewCompanys] = useState(initialCompanyState);
+
   const [newCompany, setNewCompany] = useState({
     name: "",
     industry: "",
@@ -14,12 +50,14 @@ function Incoming_Company() {
     departureDate: "",
     eligibility: "",
     passoutYear: "",
-    batch: "",
+    course: "",
+    branch: "",
     jobDescription: "",
     rounds: [],
-    companyImage: null, 
+    companyImage: null,
     companyPdf: null,
   });
+
   useEffect(() => {
     const fetchCompanies = async () => {
       const token = localStorage.getItem("token");
@@ -45,26 +83,39 @@ function Incoming_Company() {
     fetchCompanies();
   }, []);
 
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => setSuccessMessage(""), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
+
+
   const handleInputChange = (e) => {
     setNewCompany({ ...newCompany, [e.target.name]: e.target.value });
   };
 
-  const handleRoundsChange = (e) => {
-    const { name, value } = e.target;
-    setNewCompany((prev) => {
-      const updatedRounds = [...prev.rounds];
-      updatedRounds[name] = value;
-      return { ...prev, rounds: updatedRounds };
-    });
-  };
-
-  // const handleFileChange = (e) => {
-  //   setNewCompany({ ...newCompany, companyImage: e.target.files[0] });
+  // const handleRoundsChange = (e) => {
+  //   const { name, value } = e.target;
+  //   setNewCompany((prev) => {
+  //     const updatedRounds = [...prev.rounds];
+  //     updatedRounds[name] = value;
+  //     return { ...prev, rounds: updatedRounds };
+  //   });
   // };
+
 
   const handleFileChange = (e) => {
     const { name, files } = e.target;
     setNewCompany((prev) => ({ ...prev, [name]: files[0] }));
+  };
+  const handleCourseChange = (e) => {
+    const selectedCourse = e.target.value;
+    setNewCompany((prev) => ({
+      ...prev,
+      course: selectedCourse,
+      branch: "", // reset branch when course changes
+    }));
   };
 
 
@@ -75,7 +126,6 @@ function Incoming_Company() {
       console.error("❌ No token found. Please log in.");
       return; 
     }
-
     const formData = new FormData();
     formData.append("name", newCompany.name);
     formData.append("industry", newCompany.industry);
@@ -84,8 +134,6 @@ function Incoming_Company() {
     formData.append("arrivalDate", newCompany.arrivalDate);
     formData.append("departureDate", newCompany.departureDate);
     formData.append("jobDescription", newCompany.jobDescription);
-    // formData.append("companyPdf", newCompany.companyPdf);
-
     if (newCompany.companyPdf instanceof File) {
       formData.append("companyPdf", newCompany.companyPdf);
     }
@@ -112,10 +160,15 @@ function Incoming_Company() {
       });
 
       console.log("✅ Company added successfully", response.data);
+      setSuccessMessage("✅ Company added successfully!");
+      setNewCompany(initialCompanyState);
     } catch (error) {
       console.error("❌ Failed to add company", error.response?.data || error.message);
+      setSuccessMessage("❌ Failed to add company. Please try again.");
+
     }
   };
+
   const handleView = (company) => {
     setSelectedCompany(company);
   };
@@ -171,7 +224,6 @@ function Incoming_Company() {
             { label: "Departure Date", name: "departureDate", type: "date" },
             { label: "Eligibility", name: "eligibility", placeholder: "Eligibility criteria" },
             { label: "Passout Year", name: "passoutYear", placeholder: "Passout year" },
-            { label: "Department", name: "batch", placeholder: "Batch (e.g. B.Tech CSE)" },
           ].map(({ label, name, type = "text", placeholder }) => (
             <label key={name} className="block">
               <span className="text-gray-700">{label}</span>
@@ -185,6 +237,45 @@ function Incoming_Company() {
               />
             </label>
           ))}
+
+          {/* Course Selection */}
+          <label className="block">
+            <span className="text-gray-700">Course</span>
+            <select
+              name="course"
+              className="p-2 mt-1 border rounded w-full"
+              value={newCompany.course}
+              onChange={handleCourseChange}
+            >
+              <option value="">Select Course</option>
+              {Object.keys(courseDepartments).map((course) => (
+                <option key={course} value={course}>
+                  {course}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          {/* Branch Selection */}
+          <label className="block">
+            <span className="text-gray-700">Branch/Department</span>
+            <select
+              name="branch"
+              className="p-2 mt-1 border rounded w-full"
+              value={newCompany.branch}
+              onChange={handleInputChange}
+              disabled={!newCompany.course}
+            >
+              <option value="">Select Branch</option>
+              {newCompany.course &&
+                courseDepartments[newCompany.course].map((branch) => (
+                  <option key={branch} value={branch}>
+                    {branch}
+                  </option>
+                ))}
+            </select>
+          </label>
+
 
           {/* Job Description */}
           <label className="block">
@@ -279,9 +370,14 @@ function Incoming_Company() {
         >
           Add Company
         </button>
+        {successMessage && (
+          <div className={`p-3 rounded mb-4 text-white ${successMessage.startsWith("✅") ? "bg-green-600" : "bg-red-600"}`}>
+            {successMessage}
+          </div>
+        )}
+
       </div>
 
-      {/* Company List Section */}
       <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
         <h2 className="text-lg sm:text-xl font-semibold text-gray-700 mb-4">
           📋 Company List
@@ -338,8 +434,6 @@ function Incoming_Company() {
             </tbody>
           </table>
         </div>
-
-        {/* Modal */}
         {selectedCompany && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 px-4">
             <div className="bg-white p-4 sm:p-6 rounded-lg w-full max-w-md relative overflow-y-auto max-h-[90vh]">

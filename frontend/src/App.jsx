@@ -11,11 +11,17 @@ import HomePages from "./Components/Students/HomePages";
 import Placement_Home from "./Components/Placements/Placement_Home";
 import Profile from "./Components/Collage/Profile";
 import SProfile from "./Components/Students/SProfile";
+import AdminProfile from "./Components/Placements/PProfile";
 import View_Students from "./Components/Placements/View_Students";
 import View_Student from "./Components/Students/View-Students";
 import Incoming_Companies from "./Components/Students/Incoming_Companies";
 import Incoming_Company from "./Components/Placements/Incoming_Company";
+import Applied_students from "./Components/Placements/Applied_students"
+import Outgoing_Companies from "./Components/Students/Outgoing_Companies";
+import Applied_companies from "./Components/Students/Applied_companies";
+import Outgoing_Company from "./Components/Placements/Outgoing_Company";
 import StudentList from "./Components/Collage/StudentList";
+import OngoingRecruitments from "./Components/Placements/OngoingRecruitments";
 import EmployeeList from "./Components/Collage/EmployeeList";
 
 function App() {
@@ -36,10 +42,16 @@ function App() {
           <Route path="/placement-homepage" element={<Placement_Home />} />
           <Route path="/placement-homepages/students" element={<View_Students />} />
           <Route path="/placement-homepages/companies" element={<Incoming_Company />} />
+          <Route path="/placement-homepages/results" element={<Outgoing_Company />} />
+          <Route path="/placement-homepages/applied-students" element={<Applied_students />} />
+          <Route path="/placement-homepages/recruitments" element={<OngoingRecruitments />} />
           <Route path="/collage-homepage/profile" element={<Profile />} />
           <Route path="/student-homepage/profile" element={<SProfile />} />
+          <Route path="/placement-homepages/profile" element={<AdminProfile />} />
           <Route path="/student-homepage/students" element={<View_Student />} />
           <Route path="/student-homepage/incoming-companies" element={<Incoming_Companies />} />
+          <Route path="/student-homepage/applied-comapnies" element={<Applied_companies />} />
+          <Route path="/student-homepage/results" element={<Outgoing_Companies />} />
           <Route path="/collage-homepage/students" element={<StudentList />} />
           <Route path="/collage-homepage/employees" element={<EmployeeList />} />
 
