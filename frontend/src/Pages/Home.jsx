@@ -1,16 +1,15 @@
-import collageImage from "../assets/images/collage.jpg";
+// import collageImage from "../assets/images/Home.jpg";
 
 const Home = () => {
     return (
-        <div className="relative w-full h-screen flex items-center justify-center">
+        <div className="w-full">
             <img
-                src={collageImage} // ✅ Use the imported image
+                // src={collageImage}
+                src="https://agcamritsar.in/pictures/New/agc_high_resolution_img.jpg"
                 alt="Collage"
-                className="absolute top-0 left-0 w-full h-full object-cover opacity-90"
+                className="w-full object-cover
+                           h-[200px] sm:h-[300px] md:h-[400px] lg:h-[500px] xl:h-[450px]"
             />
-            <h1 className="relative z-10 text-4xl font-bold text-white bg-black bg-opacity-50 px-4 py-2 rounded-md">
-                Welcome to Our College Portal
-            </h1>
         </div>
     );
 };

@@ -7,6 +7,7 @@ function Applied_students() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [selectedCompany, setSelectedCompany] = useState(null);
+    const [applications, setApplications] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [filterStatus, setFilterStatus] = useState("all");
     const [currentPage, setCurrentPage] = useState(1);
@@ -56,11 +57,36 @@ function Applied_students() {
         }
 
         setFilteredCompanies(updated);
-        setCurrentPage(1); // reset to page 1 when filter/search changes
+        setCurrentPage(1);
     }, [searchQuery, filterStatus, companies]);
 
-    const handleView = (company) => setSelectedCompany(company);
-    const handleClose = () => setSelectedCompany(null);
+    const handleView = async (company) => {
+        setSelectedCompany(company);
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            console.error("Unauthorized: No token found");
+            return;
+        }
+
+        try {
+            const response = await axios.get(
+                `http://localhost:5000/api/employee/applications/${company._id}`,
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            );
+            setApplications(response.data);
+            console.log(response.data);
+        } catch (err) {
+            console.error("Failed to fetch applications:", err);
+        }
+    };
+
+    const handleClose = () => {
+        setSelectedCompany(null);
+        setApplications([]);
+    };
 
     const totalPages = Math.ceil(filteredCompanies.length / companiesPerPage);
     const currentData = filteredCompanies.slice(
@@ -77,7 +103,6 @@ function Applied_students() {
                 List of Companies Where Students Applied
             </h1>
 
-            {/* Search & Filter Controls */}
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
                 <input
                     type="text"
@@ -113,7 +138,6 @@ function Applied_students() {
                                 <th className="border p-3">Contact</th>
                                 <th className="border p-3">Arrival</th>
                                 <th className="border p-3">Departure</th>
-                                <th className="border p-3">Image</th>
                                 <th className="border p-3">Action</th>
                             </tr>
                         </thead>
@@ -124,45 +148,106 @@ function Applied_students() {
                                     <td className="border p-2">{company.name}</td>
                                     <td className="border p-2">{company.industry}</td>
                                     <td className="border p-2">{company.contact}</td>
-                                    <td className="border p-2">{company.arrivalDate?.slice(0, 10)}</td>
-                                    <td className="border p-2">{company.departureDate?.slice(0, 10)}</td>
                                     <td className="border p-2">
-                                        {company.companyImage && (
-                                            <img
-                                                src={`http://localhost:5000/uploads/${company.companyImage}`}
-                                                alt="Company"
-                                                className="w-24 h-14 object-cover mx-auto"
-                                            />
-                                        )}
+                                        {new Date(company.arrivalDate).toLocaleDateString("en-US", {
+                                            year: "numeric",
+                                            month: "long",
+                                            day: "numeric",
+                                        })}
+                                    </td>
+                                    <td className="border p-2">
+                                        {new Date(company.departureDate).toLocaleDateString("en-US", {
+                                            year: "numeric",
+                                            month: "long",
+                                            day: "numeric",
+                                        })}
                                     </td>
                                     <td className="border p-2">
                                         <button
-                                            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
                                             onClick={() => handleView(company)}
+                                            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
                                         >
-                                            View
+                                            View Students
                                         </button>
                                     </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
-                    <div className="flex justify-center mt-4 space-x-2">
-                        {Array.from({ length: totalPages }, (_, idx) => (
-                            <button
-                                key={idx}
-                                onClick={() => setCurrentPage(idx + 1)}
-                                className={`px-3 py-1 rounded border ${currentPage === idx + 1
-                                        ? "bg-blue-500 text-white"
-                                        : "bg-white text-blue-500"
-                                    }`}
-                            >
-                                {idx + 1}
-                            </button>
-                        ))}
-                    </div>
+                </div>
+
+                {/* Pagination */}
+                <div className="flex justify-center mt-4 space-x-2">
+                    {[...Array(totalPages)].map((_, idx) => (
+                        <button
+                            key={idx}
+                            onClick={() => setCurrentPage(idx + 1)}
+                            className={`px-3 py-1 rounded ${currentPage === idx + 1
+                                    ? "bg-blue-600 text-white"
+                                    : "bg-gray-200 hover:bg-gray-300"
+                                }`}
+                        >
+                            {idx + 1}
+                        </button>
+                    ))}
                 </div>
             </div>
+
+            {/* Modal */}
+            {selectedCompany && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded-lg w-11/12 max-w-4xl shadow-lg overflow-y-auto max-h-[80vh]">
+                        <h2 className="text-xl font-semibold mb-4">
+                            Students Applied to {selectedCompany.name}
+                        </h2>
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full border border-gray-300">
+                                <thead className="bg-gray-100">
+                                    <tr>
+                                        <th className="border px-3 py-2 text-left">S.No.</th>
+                                        <th className="border px-3 py-2 text-left">Name</th>
+                                        <th className="border px-3 py-2 text-left">Email</th>
+                                        <th className="border px-3 py-2 text-left">Phone</th>
+                                        <th className="border px-3 py-2 text-left">College Roll No</th>
+                                        <th className="border px-3 py-2 text-left">University Roll No</th>
+                                        <th className="border px-3 py-2 text-left">DOB</th>
+                                        <th className="border px-3 py-2 text-left">Passing Year</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {applications.length > 0 ? (
+                                        applications.map((app, idx) => (
+                                            <tr key={idx} className="hover:bg-gray-50">
+                                                <td className="border px-3 py-2">{idx + 1}</td>
+                                                <td className="border px-3 py-2">{app.name}</td>
+                                                <td className="border px-3 py-2">{app.email}</td>
+                                                <td className="border px-3 py-2">{app.phone}</td>
+                                                <td className="border px-3 py-2">{app.collegeRollNo}</td>
+                                                <td className="border px-3 py-2">{app.universityRollNo || 'N/A'}</td>
+                                                <td className="border px-3 py-2">{new Date(app.dob).toLocaleDateString()}</td>
+                                                <td className="border px-3 py-2">{app.passingYear}</td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="9" className="border px-3 py-2 text-center">
+                                                No students applied yet.
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                        <button
+                            onClick={handleClose}
+                            className="mt-6 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 }

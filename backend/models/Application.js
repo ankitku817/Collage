@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const ApplicationSchema = new mongoose.Schema({
-    studentId: { type: mongoose.Schema.Types.ObjectId, ref: "Student", required: true },
+    studentId: { type: mongoose.Schema.Types.ObjectId, ref: "Students", required: true },
+
     companyId: { type: mongoose.Schema.Types.ObjectId, ref: "Company", required: true },
     name: String,
     email: String,

@@ -114,7 +114,7 @@ function Incoming_Company() {
     setNewCompany((prev) => ({
       ...prev,
       course: selectedCourse,
-      branch: "", // reset branch when course changes
+      branch: "",
     }));
   };
 

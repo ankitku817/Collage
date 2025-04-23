@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   FaPhoneAlt,
   FaEnvelope,
@@ -8,16 +8,55 @@ import {
   FaLinkedinIn,
   FaInstagram,
 } from "react-icons/fa";
-import contactImage from "../assets//images/contact.jpg"; // Ensure this image exists
+import contactImage from "../assets/images/contact.jpg"; // Ensure this image exists
 
 const Contact = () => {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [responseMessage, setResponseMessage] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const data = {
+      name: name,
+      email: email,
+      message: message,
+    };
+
+    try {
+      const response = await fetch("http://localhost:5000/api/student/contact-us", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setResponseMessage(result.msg);
+        setName("");
+        setEmail("");
+        setMessage("");
+      } else {
+        setResponseMessage(result.msg);
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      setResponseMessage("Failed to send message.");
+    }
+  };
+
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center bg-gray-100 py-10">
       {/* Background Image */}
       <div
         className="absolute inset-0 bg-cover bg-center opacity-20"
         style={{ backgroundImage: `url(${contactImage})` }}
-      ></div>
+></div>
 
       {/* Contact Container */}
       <div className="relative bg-white shadow-lg rounded-xl p-8 w-full max-w-5xl md:flex md:space-x-10">
@@ -66,20 +105,29 @@ const Contact = () => {
           <h3 className="text-2xl font-semibold text-blue-600">
             Send a Message
           </h3>
-          <form className="mt-4 space-y-4">
+          <form className="mt-4 space-y-4" onSubmit={handleSubmit}>
             <input
               type="text"
+              name="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
               placeholder="Your Name"
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-500"
-              required
             />
             <input
               type="email"
+              name="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="Your Email"
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-500"
               required
             />
             <textarea
+              name="message"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
               placeholder="Your Message"
               rows="4"
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-500"
@@ -89,9 +137,10 @@ const Contact = () => {
               type="submit"
               className="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 transition font-semibold"
             >
-              Send Message
+              Submit
             </button>
           </form>
+          {responseMessage && <p>{responseMessage}</p>}
         </div>
       </div>
 

@@ -7,19 +7,16 @@ const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const Students = require("../models/Students");
 const verifyStudent = require("../middleware/verifyStudent");
+const SelectedStudent = require("../models/SelectedStudent");
 const Company = require("../models/Company");
 const Application =require( "../models/Application");
 const OutgoingCompany = require("../models/OutgoingCompany");
 const router = express.Router();
+const Contact = require("../models/Contact");
 const uploadDir = path.join(__dirname, "../uploads");
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
-// const storage = multer.diskStorage({
-//     destination: (req, file, cb) => cb(null, uploadDir),
-//     filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
-// });
-// const upload = multer({ storage });
 
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
@@ -158,17 +155,16 @@ router.post("/change-password", verifyStudent, async (req, res) => {
 router.get("/students-profile", verifyStudent, async (req, res) => {
     try {
         const student = await Students.findById(req.studentId).select("-password");
-
         if (!student) {
             return res.status(404).json({ message: "Student not found!" });
         }
-
         res.status(200).json(student);
     } catch (error) {
         console.error("Profile fetch error:", error.message);
         res.status(500).json({ message: "Server error!" });
     }
 });
+
 router.get("/students", verifyStudent, async (req, res) => {
     try {
         const currentStudent = await Students.findById(req.studentId);
@@ -267,6 +263,7 @@ router.get("/companies", verifyStudent, async (req, res) => {
         res.status(500).json({ message: "Server error!" });
     }
 });
+
 router.get("/companies/outgoing", verifyStudent, async (req, res) => {
     try {
         const outgoingCompanies = await OutgoingCompany.find().sort({ departureDate: -1 });
@@ -276,6 +273,7 @@ router.get("/companies/outgoing", verifyStudent, async (req, res) => {
         res.status(500).json({ message: "Server error!" });
     }
 });
+
 
 router.get('/check-application', verifyStudent, async (req, res) => {
     const { companyId, collegeRollNo } = req.query;
@@ -298,6 +296,103 @@ router.get('/applied-comapnies', verifyStudent, async (req, res) => {
     } catch (error) {
         console.error("Error fetching applied companies:", error);
         res.status(500).json({ message: "Server error while fetching applied companies" });
+    }
+});
+
+router.post("contact-us/", async (req, res) => {
+    const { name, email, message } = req.body;
+    if (!name || !email || !message) {
+        return res.status(400).json({
+            success: false,
+            msg: "All fields (name, email, message) are required.",
+        });
+    }
+    const emailRegex = /\S+@\S+\.\S+/;
+    if (!emailRegex.test(email)) {
+        return res.status(400).json({
+            success: false,
+            msg: "Please enter a valid email address.",
+        });
+    }
+    try {
+        const newContact = new Contact({ name, email, message });
+        await newContact.save();
+        res.status(201).json({
+            success: true,
+            msg: "Message received! Admin will respond soon.",
+        });
+    } catch (err) {
+        console.error("Error saving contact form:", err.message);
+        res
+            .status(500)
+            .json({ success: false, msg: "Server error, try again later." });
+    }
+});
+router.get("/contact-us", async (req, res) => {
+    try {
+        const messages = await Contact.find().sort({ createdAt: -1 });
+        res.status(200).json({ success: true, data: messages });
+    } catch (err) {
+        console.error("Error fetching messages:", err.message);
+        res.status(500).json({ success: false, msg: "Server error" });
+    }
+});
+
+router.get("/getSelectedStudents/:companyId", async (req, res) => {
+    const { companyId } = req.params;
+
+    try {
+        const selected = await SelectedStudent.findOne({ companyId });
+
+        if (!selected) {
+            return res.status(404).json({ success: false, message: "No selected students found." });
+        }
+
+        const result = {};
+        selected.roundsData.forEach(({ round, selectedStudents }) => {
+            result[`round${round}`] = {
+                selectedStudents,
+            };
+        });
+
+        result["finalSelectedStudents"] = selected.finalSelectedStudents || [];
+
+        res.status(200).json({ success: true, data: result });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: "Server error while fetching selected students." });
+    }
+});
+router.get("/todaycompanies", verifyStudent, async (req, res) => {
+    try {
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+
+        const endOfDay = new Date();
+        endOfDay.setHours(23, 59, 59, 999);
+
+        const todayCompanies = await Company.find({
+            arrivalDate: {
+                $gte: startOfDay,
+                $lte: endOfDay,
+            },
+        }).sort({ arrivalDate: 1 });
+
+        res.status(200).json(todayCompanies);
+    } catch (error) {
+        console.error("Error fetching today's companies:", error);
+        res.status(500).json({ message: "Server error!" });
+    }
+});
+
+router.get("/applications/:companyId", verifyStudent, async (req, res) => {
+    try {
+        const { companyId } = req.params;
+        const applications = await Application.find({ companyId }).populate("studentId");
+        res.status(200).json(applications);
+    } catch (error) {
+        console.error("Error fetching applications:", error);
+        res.status(500).json({ message: "Server error!" });
     }
 });
 module.exports = router;

@@ -236,9 +236,9 @@ const CHeader = () => {
             </li>
           </Link>
           <hr />
-          <Link to="/collage-homepage/stastics">
+          <Link to="/collage-homepage/feedback-response">
             <li className="flex items-center gap-5 cursor-pointer text-xl hover:text-blue-600">
-              <FaChartBar className="text-blue-600" /> Statistics
+              <FaChartBar className="text-blue-600" /> Feedback
             </li>
           </Link>
           <hr />
@@ -505,15 +505,10 @@ const CHeader = () => {
     </div>
   )
       }
-      
-      {/* Main Content */}
       <main className="pt-32 px-4">
-        {/* Your Hero Section */}
-        <section className="text-center py-20">
-          <h1 className="text-4xl font-bold">Welcome to the College Placement System</h1>
-          <p className="mt-4 text-lg text-gray-600">
-            Streamlining the hiring process for students and employers.
-          </p>
+        <section className="text-center py-0">
+          
+          
         </section>
       </main>
     </div>

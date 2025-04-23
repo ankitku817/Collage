@@ -16,6 +16,7 @@ import { X, User, LogOut, Lock, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
+import policies from '../../Pages/Policy'
 
 const HomePages = () => {
     const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
@@ -119,7 +120,7 @@ const HomePages = () => {
                      title="Ongoing Recruitments"
                      description="View all company recruitment lists with details."
                      buttonText="View Details"
-                     linkTo="/placement-homepages/recruitments"
+                     linkTo="/student-homepage/recruitments"
                    />
            
                    <FeatureCard
@@ -134,8 +135,10 @@ const HomePages = () => {
                      icon={<FaUsers className="text-5xl text-purple-600" />}
                      title="Outgoing Students"
                      description="See students who are placed in top companies."
-                     buttonText="View List"
-                   />
+                    buttonText="View List"
+                    linkTo="/student-homepage/outgoing-students"
+                />
+                
                    <FeatureCard
                      icon={<FaChartBar className="text-5xl text-yellow-600" />}
                      title="Statistics"
@@ -146,7 +149,8 @@ const HomePages = () => {
                      icon={<FaBook className="text-5xl text-red-600" />}
                      title="Placement Policy"
                      description="Read the guidelines and policies for placement."
-                     buttonText="View Policy"
+                    buttonText="View Policy"
+                    linkTo="/student-homepage/policy"
                    />
                  </div>
 

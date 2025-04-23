@@ -105,7 +105,7 @@ function Applied_companies() {
                             <button
                                 onClick={handleClose}
                                 className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-                            >
+                            >  
                                 ✖
                             </button>
                             <h3 className="text-xl font-bold mb-4">{selectedCompany.name}</h3>

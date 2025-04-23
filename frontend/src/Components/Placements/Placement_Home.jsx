@@ -140,6 +140,7 @@ const Placement_Home = () => {
           title="Outgoing Students"
           description="See students who are placed in top companies."
           buttonText="View List"
+          linkTo="/placement-homepages/outgoing-students"
         />
         <FeatureCard
           icon={<FaChartBar className="text-5xl text-yellow-600" />}
@@ -147,11 +148,13 @@ const Placement_Home = () => {
           description="Graphical representation of placements & job offers."
           buttonText="View Stats"
         />
+        
         <FeatureCard
           icon={<FaBook className="text-5xl text-red-600" />}
           title="Placement Policy"
           description="Read the guidelines and policies for placement."
           buttonText="View Policy"
+          linkTo="/placement-homepages/policy"
         />
       </div>
       {/* Partner Companies */}

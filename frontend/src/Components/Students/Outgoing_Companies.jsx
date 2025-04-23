@@ -6,6 +6,10 @@ function Outgoing_Companies() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedCompany, setSelectedCompany] = useState(null);
+  const [selectedStudents, setSelectedStudents] = useState({
+    rounds: {},
+    finalSelected: [],
+  });
 
   useEffect(() => {
     const fetchCompanies = async () => {
@@ -16,14 +20,12 @@ function Outgoing_Companies() {
         return;
       }
       try {
-        const response = await axios.get("http://localhost:5000/api/student/companies/outgoing", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await axios.get(
+          "http://localhost:5000/api/student/companies/outgoing",
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
         setCompanies(response.data);
-        console.log(response.data);
-      } catch (error) {
+      } catch (err) {
         setError("Failed to fetch companies. Please check your authentication.");
       } finally {
         setLoading(false);
@@ -32,64 +34,79 @@ function Outgoing_Companies() {
     fetchCompanies();
   }, []);
 
-  const handleView = (company) => {
+  const handleView = async (company) => {
     setSelectedCompany(company);
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/student/getSelectedStudents/${company._id}`
+      );
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        const formattedRounds = {};
+
+        Object.keys(result.data).forEach((key) => {
+          if (key.startsWith("round")) {
+            formattedRounds[key] = result.data[key].selectedStudents || [];
+          }
+        });
+
+        setSelectedStudents({
+          rounds: formattedRounds,
+          finalSelected: result.data.finalSelectedStudents || [],
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching selected students:", error);
+    }
   };
 
-  const handleClose = () => {
-    setSelectedCompany(null);
-  };
+  const handleClose = () => setSelectedCompany(null);
 
-  if (loading) return <p className="text-center">Loading companies... 🕒</p>;
-  if (error) return <p className="text-red-600 text-center">{error} ❌</p>;
+  if (loading) return <p className="text-center text-xl">Loading companies... 🕒</p>;
+  if (error) return <p className="text-red-600 text-center text-xl">{error} ❌</p>;
 
   return (
-    <div className="p-4 md:p-6 bg-gradient-to-r from-blue-100 to-green-100 min-h-screen">
-      <h1 className="text-2xl sm:text-3xl font-bold text-center text-blue-800 mb-6">
-        🏢 Outgoing Companies
-      </h1>
+    <div className="p-6 bg-gradient-to-r from-blue-100 to-green-100 min-h-screen">
+      <h1 className="text-3xl font-bold text-center text-blue-800 mb-6">🏢 Outgoing Companies</h1>
 
-      <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
-        <h2 className="text-lg sm:text-xl font-semibold text-gray-700 mb-4">
-          📋 Company List
-        </h2>
+      <div className="bg-white p-6 rounded-lg shadow-lg">
+        <h2 className="text-xl font-semibold text-gray-700 mb-4">📋 Company List</h2>
 
         <div className="overflow-x-auto">
           <table className="min-w-full border-collapse border border-gray-300">
             <thead className="bg-gray-200 text-sm sm:text-base">
               <tr>
-                <th className="border p-10">Name</th>
-                <th className="border p-10">Industry</th>
-                <th className="border p-8">Contact</th>
-                <th className="border p-8">Arrival</th>
-                <th className="border p-8">Departure</th>
-                <th className="border p-16">Image</th>
-                <th className="border p-0">Job Description</th>
-                <th className="border p-2">Actions</th>
+                <th className="border p-4">Name</th>
+                <th className="border p-4">Industry</th>
+                <th className="border p-4">Contact</th>
+                <th className="border p-4">Arrival</th>
+                <th className="border p-4">Departure</th>
+                <th className="border p-4">Image</th>
+                <th className="border p-4">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {companies.map((company) => (
-                <tr key={company._id} className="text-sm sm:text-base">
-                  <td className="border p-2">{company.name}</td>
-                  <td className="border p-2">{company.industry}</td>
-                  <td className="border p-2">{company.contact}</td>
-                  <td className="border p-2">{company.arrivalDate?.slice(0, 10)}</td>
-                  <td className="border p-2">{company.departureDate?.slice(0, 10)}</td>
-                  <td className="border p-0">
-                    {company.companyImage && (
+              {companies.map((c) => (
+                <tr key={c._id} className="text-sm sm:text-base">
+                  <td className="border p-2">{c.name}</td>
+                  <td className="border p-2">{c.industry}</td>
+                  <td className="border p-2">{c.contact}</td>
+                  <td className="border p-2">{c.arrivalDate?.slice(0, 10)}</td>
+                  <td className="border p-2">{c.departureDate?.slice(0, 10)}</td>
+                  <td className="border p-2">
+                    {c.companyImage && (
                       <img
-                        src={`http://localhost:5000/uploads/${company.companyImage}`}
-                        alt="Company"
-                        className="w-44 h-16 object-cover mx-auto"
+                        src={`http://localhost:5000/uploads/${c.companyImage}`}
+                        alt={c.name}
+                        className="w-32 h-12 object-cover mx-auto"
                       />
                     )}
                   </td>
-                  <td className="border p-2">{company.jobDescription}</td>
-                  <td className="border p-2 space-x-2">
+                  <td className="border p-2">
                     <button
-                      className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded"
-                      onClick={() => handleView(company)}
+                      onClick={() => handleView(c)}
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md"
                     >
                       See Results
                     </button>
@@ -99,65 +116,63 @@ function Outgoing_Companies() {
             </tbody>
           </table>
         </div>
-
-        {selectedCompany && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 px-4">
-            <div className="bg-white p-4 sm:p-6 rounded-lg w-full max-w-xl relative overflow-y-auto max-h-[90vh]">
-              <button
-                onClick={handleClose}
-                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-              >
-                ✖
-              </button>
-              <h3 className="text-xl font-bold mb-4">{selectedCompany.name}</h3>
-              <p><strong>Industry:</strong> {selectedCompany.industry}</p>
-              <p><strong>Contact:</strong> {selectedCompany.contact}</p>
-              <p><strong>Location:</strong> {selectedCompany.location}</p>
-              <p><strong>Arrival:</strong> {selectedCompany.arrivalDate?.slice(0, 10)}</p>
-              <p><strong>Departure:</strong> {selectedCompany.departureDate?.slice(0, 10)}</p>
-
-              <div className="mt-4">
-                <strong>Eligibility:</strong>
-                <ul className="list-disc list-inside">
-                  <li><strong>Passout Year:</strong> {selectedCompany.eligibilityCriteria?.passOutYear}</li>
-                  <li><strong>Percentage:</strong> {selectedCompany.eligibilityCriteria?.percentage}%</li>
-                  <li><strong>Branch:</strong> {selectedCompany.eligibilityCriteria?.branch}</li>
-                </ul>
-              </div>
-
-              <p className="mt-2"><strong>Job Description:</strong> {selectedCompany.jobDescription}</p>
-
-              <div className="mt-4">
-                <strong>Rounds:</strong>
-                <ul className="list-disc list-inside">
-                  {selectedCompany.rounds?.map((round, idx) => (
-                    <li key={idx}>
-                      <strong>{round.roundName}:</strong> {round.description}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {selectedCompany.companyImage && (
-                <img
-                  src={`http://localhost:5000/uploads/${selectedCompany.companyImage}`}
-                  alt="Company"
-                  className="w-full h-40 object-contain mt-4"
-                />
-              )}
-
-              {selectedCompany.companyPdf && (
-                <button
-                  className="w-full h-40 object-contain mt-4"
-                  onClick={() => window.open(`http://localhost:5000/uploads/${selectedCompany.companyPdf}`)}
-                >
-                  View attachment
-                </button>
-              )}
-            </div>
-          </div>
-        )}
       </div>
+
+      {selectedCompany && (
+        <div className="overflow-x-auto mt-6 bg-white p-6 rounded-lg shadow-lg">
+          <h2 className="text-xl font-semibold text-blue-700 mb-4">
+            Selected Students for {selectedCompany.name}
+          </h2>
+
+          {/* Table for displaying rounds and selected students */}
+          <table className="min-w-full border border-gray-300">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="border px-4 py-2">S.No.</th>
+                {Object.keys(selectedStudents.rounds).map((roundName, index) => (
+                  <th key={roundName} className="border px-4 py-2">
+                    {roundName.replace("round", "Round ")} {/* Format the round name */}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {Object.values(selectedStudents.rounds).map((students, index) => (
+                <tr key={index}>
+                  <td className="border px-4 py-2 text-center">{index + 1}</td>
+                  {Object.keys(selectedStudents.rounds).map((roundName) => {
+                    const roundStudents = selectedStudents.rounds[roundName];
+                    return (
+                      <td key={roundName} className="border px-4 py-2 text-center">
+                        {roundStudents.length > 0
+                          ? roundStudents[index] || "No student selected"
+                          : "No students selected"}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {/* Display Final Selection */}
+          <h3 className="text-lg font-semibold text-blue-700 mt-4">Final Selection</h3>
+          <div className="border border-gray-300 p-4 mt-2">
+            {selectedStudents.finalSelected.length > 0
+              ? selectedStudents.finalSelected.join(", ")
+              : "No final selections yet"}
+          </div>
+
+          <div className="text-center mt-4">
+            <button
+              onClick={handleClose}
+              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg shadow-md"
+            >
+              Close View
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -24,6 +24,7 @@ function View_Student() {
     fetchStudents();
   }, []);
 
+
   if (loading) return <p className="text-center text-lg text-blue-500 font-semibold">🔄 Loading students...</p>;
   if (error) return <p className="text-center text-red-600 font-bold">❌ {error}</p>;
 
@@ -66,5 +67,4 @@ function View_Student() {
     </div>
   );
 }
-
 export default View_Student;
