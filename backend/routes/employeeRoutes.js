@@ -32,6 +32,36 @@ const upload = multer({
     }
 });
 
+router.post("/change-password", verifyEmployee, async (req, res) => {
+    try {
+        const { oldPassword, newPassword, confirmPassword } = req.body;
+
+        if (!oldPassword || !newPassword || !confirmPassword) {
+            return res.status(400).json({ message: "All fields are required!" });
+        }
+
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({ message: "New password and confirm password do not match!" });
+        }        const employee = await Employee.findById(req.employeeId);
+        if (!employee) {
+            return res.status(404).json({ message: "Employee not found!" });
+        }
+        const isMatch = await bcrypt.compare(oldPassword, employee.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: "Incorrect old password!" });
+        }
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        employee.password = hashedPassword;
+        await employee.save();
+
+        res.status(200).json({ message: "Password changed successfully!" });
+    } catch (error) {
+        console.error("Change password error:", error);
+        res.status(500).json({ message: "Server error!" });
+    }
+});
 router.post("/storeSelectedStudents", async (req, res) => {
     const { companyId, roundsData, finalSelectedStudents } = req.body;
 
@@ -258,7 +288,7 @@ router.get("/todaycompanies", verifyEmployee, async (req, res) => {
         const endOfDay = new Date();
         endOfDay.setHours(23, 59, 59, 999); 
 
-        const todayCompanies = await Company.find({
+        const todayCompanies = await OutgoingCompany.find({
             arrivalDate: {
                 $gte: startOfDay,
                 $lte: endOfDay,
@@ -286,8 +316,11 @@ router.delete("/companies/:id", verifyEmployee, async (req, res) => {
 router.post("/employee-login", async (req, res) => {
     try {
         const { empId, password } = req.body;
+        if (!empId || empId.length !== 8) {
+            return res.status(400).json({ message: "Invalid userId it must be exactly 8 characters long." });
+        }
 
-        const employee = await Employee.findOne({ empId });
+        const employee = await Employee.findOne({ empId:String(empId) });
         if (!employee) {
             return res.status(400).json({ message: "Invalid Employee Id" });
         }

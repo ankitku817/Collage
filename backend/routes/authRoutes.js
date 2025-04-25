@@ -173,7 +173,6 @@ router.post('/signup', async (req, res) => {
     }
 });
 
-// Login Route
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
@@ -201,7 +200,6 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// Get User Details Route
 router.get('/me', verifyToken, async (req, res) => {
     try {
         const user = await User.findById(req.user.id).select('-password');
@@ -215,7 +213,6 @@ router.get('/me', verifyToken, async (req, res) => {
     }
 });
 
-// Logout Route
 router.post('/logout', verifyToken, (req, res) => {
     try {
         res.json({ message: 'Logout successful' });

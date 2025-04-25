@@ -48,8 +48,6 @@ router.get("/ongoing-recruitments", async (req, res) => {
         res.status(500).json({ message: "Server error!" });
     }
 });
-
-// Get details of a specific recruitment (company) by ID
 router.get("/recruitments/:id", async (req, res) => {
     try {
         const company = await Company.findById(req.params.id);
@@ -85,7 +83,6 @@ router.post("/apply/:companyId", async (req, res) => {
     }
 });
 
-// Fetch all applications for a specific student
 router.get("/applications/:studentId", async (req, res) => {
     try {
         const applications = await Application.find({ studentId: req.params.studentId });
@@ -95,8 +92,6 @@ router.get("/applications/:studentId", async (req, res) => {
         res.status(500).json({ message: "Server error!" });
     }
 });
-
-// Verify if a student has applied to a particular recruitment (company)
 router.get("/has-applied/:studentId/:companyId", async (req, res) => {
     try {
         const application = await Application.findOne({

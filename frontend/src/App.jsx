@@ -28,9 +28,7 @@ import Feedback from "./Components/Collage/Feedback";
 import OutgoingStudent from "./Components/Students/OutgoingStudent";
 import OngoingRecruitments from "./Components/Placements/OngoingRecruitments";
 import EmployeeList from "./Components/Collage/EmployeeList";
-import BlogCard from "./Pages/BlogCards";
-
-
+import BlogsSection from './Components/BlogsSection'
 function App() {
   return (
     <div className="flex flex-col min-h-screen">
@@ -42,7 +40,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/admin-register" element={<AdminRegister />} />
           <Route path="/about" element={<About />} />
-          <Route path="/blog" element={<BlogCard />} />
+          <Route path="/blog" element={<BlogsSection />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/services" element={<Services />} />
           <Route path="/collage-homepage" element={<HomePage />} />
@@ -55,25 +53,20 @@ function App() {
           <Route path="/placement-homepages/recruitments" element={<OngoingRecruitments />} />
           <Route path="/collage-homepage/profile" element={<Profile />} />
           <Route path="/collage-homepage/feedback-response" element={<Feedback />} />
-          
-
           <Route path="/student-homepage/profile" element={<SProfile />} />
           <Route path="/placement-homepages/profile" element={<AdminProfile />} />
-          
           <Route path="/placement-homepages/outgoing-students" element={<OutgoingStudents />} />
           <Route path="/placement-homepages/policy" element={<PlacementPolicy />} />
           <Route path="/student-homepage/students" element={<View_Student />} />
           <Route path="/student-homepage/outgoing-students" element={<OutgoingStudent />} />
           <Route path="/student-homepage/incoming-companies" element={<Incoming_Companies />} />
           <Route path="/student-homepage/applied-comapnies" element={<Applied_companies />} />
-          
           <Route path="/student-homepage/recruitments" element={<OngoingRecruitment />} />
           <Route path="/student-homepage/policy" element={<PlacementPolicy />} />
           <Route path="/student-homepage/results" element={<Outgoing_Companies />} />
           <Route path="/collage-homepage/students" element={<StudentList />} />
           <Route path="/collage-homepage/employees" element={<EmployeeList />} />
           <Route path="/collage-homepage/policy" element={<PlacementPolicy />} />
-
         </Routes>
       </main>
       <footer className="bottom-0 left-0 w-full bg-gray-900 text-white p-4">

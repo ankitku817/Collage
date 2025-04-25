@@ -23,6 +23,7 @@ function OngoingRecruitment() {
                         headers: { Authorization: `Bearer ${token}` },
                     }
                 );
+                console.log("Today companies:", res.data); 
                 setTodayCompanies(res.data);
             } catch (err) {
                 console.error(err);
@@ -34,6 +35,7 @@ function OngoingRecruitment() {
 
         fetchToday();
     }, []);
+
 
     useEffect(() => {
         const fetchSelectedStudents = async () => {

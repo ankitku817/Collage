@@ -38,6 +38,7 @@ const HomePages = () => {
         </Link>
       </div>
     );
+
     const handleChangePassword = async () => {
         if (!oldPassword || !newPassword || !confirmPassword) {
             setError("All fields are required.");
@@ -48,6 +49,12 @@ const HomePages = () => {
             setError("New password and confirm password do not match.");
             return;
         }
+
+        if (oldPassword === newPassword) {
+            setError("New password cannot be the same as the old password.");
+            return;
+        }
+
 
         try {
             setLoading(true);
@@ -85,10 +92,7 @@ const HomePages = () => {
             setError(err.response?.data?.message || "Failed to change password.");
             setLoading(false);
         }
-    };
-
-
-
+    };    
     
     return (
         <div className="bg-gray-100 min-h-screen">

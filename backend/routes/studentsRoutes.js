@@ -36,26 +36,6 @@ const upload = multer({
     }
 });
 
-// router.put("/update-profile", verifyStudent, async (req, res) => {
-//     try {
-//         const { skills, headline,placement } = req.body;
-
-//         const student = await Students.findById(req.studentId);
-//         if (!student) {
-//             return res.status(404).json({ message: "Student not found!" });
-//         }
-//         student.skills = skills;
-//         student.headline = headline || "";
-//         student.placement=placement || "yes"
-
-//         await student.save();
-
-//         res.status(200).json({ message: "Profile updated successfully!", student });
-//     } catch (error) {
-//         console.error("Profile update error:", error.message);
-//         res.status(500).json({ message: "Server error!" });
-//     }
-// });
 router.put("/update-profile", verifyStudent, async (req, res) => {
     try {
         const { skills, headline, placement } = req.body;
@@ -64,8 +44,6 @@ router.put("/update-profile", verifyStudent, async (req, res) => {
         if (!student) {
             return res.status(404).json({ message: "Student not found!" });
         }
-
-        // Optional: validate skills
         if (skills && !Array.isArray(skills)) {
             return res.status(400).json({ message: "Skills must be an array" });
         }
@@ -299,7 +277,7 @@ router.get('/applied-comapnies', verifyStudent, async (req, res) => {
     }
 });
 
-router.post("contact-us/", async (req, res) => {
+router.post("/contact-us", async (req, res) => {
     const { name, email, message } = req.body;
     if (!name || !email || !message) {
         return res.status(400).json({
@@ -328,6 +306,8 @@ router.post("contact-us/", async (req, res) => {
             .json({ success: false, msg: "Server error, try again later." });
     }
 });
+
+
 router.get("/contact-us", async (req, res) => {
     try {
         const messages = await Contact.find().sort({ createdAt: -1 });
@@ -371,7 +351,7 @@ router.get("/todaycompanies", verifyStudent, async (req, res) => {
         const endOfDay = new Date();
         endOfDay.setHours(23, 59, 59, 999);
 
-        const todayCompanies = await Company.find({
+        const todayCompanies = await OutgoingCompany.find({
             arrivalDate: {
                 $gte: startOfDay,
                 $lte: endOfDay,

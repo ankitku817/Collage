@@ -32,6 +32,11 @@ const Placement_Home = () => {
       return;
     }
 
+    if (oldPassword === newPassword) {
+      setError("New password cannot be the same as the old password.");
+      return;
+    }
+
     try {
       setLoading(true);
 
@@ -44,7 +49,7 @@ const Placement_Home = () => {
       }
 
       const response = await axios.post(
-        "http://localhost:5000/api/student/change-password",
+        "http://localhost:5000/api/employee/change-password",
         { oldPassword, newPassword, confirmPassword },
         {
           headers: {
@@ -57,16 +62,17 @@ const Placement_Home = () => {
       setMessage(response.data.message);
       setError("");
       setLoading(false);
-
       setTimeout(() => {
         setIsChangePasswordOpen(false);
         setMessage("");
       }, 3000);
+
     } catch (err) {
       setError(err.response?.data?.message || "Failed to change password.");
       setLoading(false);
     }
   };
+
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -168,29 +174,72 @@ const Placement_Home = () => {
         </div>
       </section>
 
-      {/* Password Change Modal */}
       {isChangePasswordOpen && (
-        <Modal title="Change Password" onClose={() => setIsChangePasswordOpen(false)}>
-          {error && <p className="text-red-500">{error}</p>}
-          {message && <p className="text-green-500">{message}</p>}
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+            <h2 className="text-xl font-bold mb-4">Change Password</h2>
 
-          {!message && (
-            <>
-              <InputField label="Old Password" type="password" onChange={setOldPassword} />
-              <InputField label="New Password" type="password" onChange={setNewPassword} />
-              <InputField label="Confirm Password" type="password" onChange={setConfirmPassword} />
+            {/* Show Success or Error Messages */}
+            {error && <p className="text-red-500">{error}</p>}
+            {message && <p className="text-green-500">{message}</p>}
 
+            {!message && (
+              <>
+                <label className="block text-gray-700 text-sm font-semibold mb-1">
+                  Old Password
+                </label>
+                <input
+                  type="password"
+                  placeholder="Enter your old password..."
+                  className="w-full p-2 border border-gray-300 rounded mb-2 focus:ring focus:ring-blue-200"
+
+                  onChange={(e) => setOldPassword(e.target.value)}
+                />
+
+                <label className="block text-gray-700 text-sm font-semibold mb-1">
+                  New Password
+                </label>
+                <input
+                  type="password"
+                  placeholder="Enter a new password..."
+                  className="w-full p-2 border border-gray-300 rounded mb-2 focus:ring focus:ring-blue-200"
+
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
+
+                <label className="block text-gray-700 text-sm font-semibold mb-1">
+                  Confirm Password
+                </label>
+                <input
+                  type="password"
+                  placeholder="Confirm your new password..."
+                  className="w-full p-2 border border-gray-300 rounded mb-4 focus:ring focus:ring-blue-200"
+
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+
+                <button
+                  className="bg-green-600 text-white w-full p-2 rounded hover:bg-green-700 transition"
+                  onClick={handleChangePassword}
+                  disabled={loading}
+                >
+                  {loading ? "Changing Password..." : "Change Password"}
+                </button>
+              </>
+            )}
+
+            {!message && (
               <button
-                className="bg-green-600 text-white w-full p-2 rounded-lg hover:bg-green-700 transition"
-                onClick={handleChangePassword}
-                disabled={loading}
+                className="mt-2 text-red-500 hover:underline"
+                onClick={() => setIsChangePasswordOpen(false)}
               >
-                {loading ? "Changing Password..." : "Change Password"}
+                Cancel
               </button>
-            </>
-          )}
-        </Modal>
+            )}
+          </div>
+        </div>
       )}
+
     </div>
   );
 };
